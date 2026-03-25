@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Guide | Climate Action</title>
+    
+    <!-- NEW: High-Security Meta Tags -->
+    <!-- Content Security Policy: Whitelists specific domains -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com data: blob:;">
+    <!-- Prevent Clickjacking -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <!-- XSS Protection -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <!-- Prevent MIME Sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Three.js for 3D Character -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background-image: url(Nature_Video_Generation-3.mp4);
+            background-size: cover; background-position: center;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* Ambient Background */
+        .bg-gradient {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #1a2e22, #000);
+            z-index: -2;
+        }
+
+        /* Glass Card */
+        .guide-container {
+            position: relative; z-index: 10;
+            background: rgba(255, 255, 255, 0.4); /* Increased lightness for black text readability */
+            backdrop-filter: blur(15px);
+            padding: 40px; border-radius: 30px;
+            text-align: center; max-width: 500px; width: 90%;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* 3D Canvas container */
+        #avatar-canvas-container {
+            width: 300px; 
+            height: 350px; 
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        h1 { margin: 10px 0; font-weight: 600; font-size: 2rem; color: #000; text-shadow: none; }
+        p { font-size: 1.2rem; line-height: 1.6; color: #000; min-height: 80px; margin-bottom: 20px; font-weight: 600; }
+
+        .btn-go {
+            padding: 15px 50px; font-size: 1.2rem;
+            background: linear-gradient(135deg, #00e676, #00c853);
+            border: none; color: white; border-radius: 50px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            transition: 0.3s;
+            font-weight: bold;
+        }
+        .btn-go:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 230, 118, 0.4); }
+
+        #start-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 100;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            flex-direction: column;
+        }
+        
+        .click-hint {
+            margin-top: 20px; color: #00e676; font-size: 1.2rem; animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0%{opacity:0.6} 50%{opacity:1} 100%{opacity:0.6} }
+    </style>
+</head>
+<body>
+
+    <div class="bg-gradient"></div>
+
+    <!-- Overlay to allow Audio Playback -->
+    <div id="start-overlay" onclick="startExperience()">
+        <h1 style="border-bottom: 2px solid #00e676; padding-bottom:10px;">Meet Your Action Guide</h1>
+        <div class="click-hint">Click Anywhere to Start</div>
+    </div>
+
+    <div class="guide-container">
+        <!-- 3D Character lives here -->
+        <div id="avatar-canvas-container"></div>
+
+        <h1 id="greeting-title">Welcome</h1>
+        <p id="greeting-text">Initializing Guide...</p>
+
+        <button class="btn-go" onclick="goToClimate()">Let's Go</button>
+    </div>
+
+    <script>
+        // --- 3D CHARACTER LOGIC (THREE.JS) ---
+        const container = document.getElementById('avatar-canvas-container');
+        const scene = new THREE.Scene();
+        
+        // Camera setup
+        const camera = new THREE.PerspectiveCamera(45, 300 / 350, 0.1, 1000);
+        camera.position.set(0, 0.5, 4.5);
+        camera.lookAt(0, 0.5, 0);
+
+        // Renderer
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(300, 350);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(2, 5, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        const fillLight = new THREE.PointLight(0x00e676, 0.3); // Green bounce light
+        fillLight.position.set(-2, 1, 2);
+        scene.add(fillLight);
+        
+        // --- BUILD CHARACTER GEOMETRY ---
+        const charGroup = new THREE.Group();
+        const headGroup = new THREE.Group(); // Separate head for animation
+
+        // Materials
+        const skinMat = new THREE.MeshLambertMaterial({ color: 0xffd1a4 }); // Warmer Skin tone
+        const hairMat = new THREE.MeshLambertMaterial({ color: 0x3e2723 }); // Dark brown/black hair
+        const shirtMat = new THREE.MeshPhongMaterial({ color: 0x00e676 }); // Green Shirt
+        const pantsMat = new THREE.MeshPhongMaterial({ color: 0x263238 }); // Dark Pants
+        const whiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const blackMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+
+        // 1. Head (More shaped than a sphere)
+        const headGeo = new THREE.SphereGeometry(0.55, 32, 32);
+        headGeo.scale(0.9, 1.1, 1); 
+        const head = new THREE.Mesh(headGeo, skinMat);
+        head.castShadow = true;
+        headGroup.add(head);
+
+        // 2. Hair (Cap-like geometry)
+        const hairGeo = new THREE.SphereGeometry(0.58, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.45);
+        hairGeo.scale(0.9, 1.05, 1);
+        const hair = new THREE.Mesh(hairGeo, hairMat);
+        hair.position.y = 0.05;
+        hair.rotation.x = -0.1;
+        headGroup.add(hair);
+
+        // Hair Tuft
+        const tuftGeo = new THREE.ConeGeometry(0.1, 0.2, 32);
+        const tuft = new THREE.Mesh(tuftGeo, hairMat);
+        tuft.position.set(0, 0.6, 0.2);
+        tuft.rotation.x = -0.3;
+        headGroup.add(tuft);
+
+        // 3. Eyes (friendlier large eyes)
+        const eyeWhiteGeo = new THREE.SphereGeometry(0.13, 32, 32);
+        const eyeLeft = new THREE.Mesh(eyeWhiteGeo, whiteMat);
+        eyeLeft.scale.set(1, 1, 0.5); // Flatten
+        eyeLeft.position.set(-0.2, 0.05, 0.48);
+        headGroup.add(eyeLeft);
+
+        const eyeRight = new THREE.Mesh(eyeWhiteGeo, whiteMat);
+        eyeRight.scale.set(1, 1, 0.5); // Flatten
+        eyeRight.position.set(0.2, 0.05, 0.48);
+        headGroup.add(eyeRight);
+
+        // Pupils
+        const pupilGeo = new THREE.SphereGeometry(0.06, 16, 16);
+        const pupilLeft = new THREE.Mesh(pupilGeo, blackMat);
+        pupilLeft.position.set(-0.2, 0.05, 0.55);
+        headGroup.add(pupilLeft);
+
+        const pupilRight = new THREE.Mesh(pupilGeo, blackMat);
+        pupilRight.position.set(0.2, 0.05, 0.55);
+        headGroup.add(pupilRight);
+
+        // 4. Brows (Expressive)
+        const browGeo = new THREE.BoxGeometry(0.15, 0.03, 0.02);
+        const browLeft = new THREE.Mesh(browGeo, hairMat);
+        browLeft.position.set(-0.2, 0.22, 0.52);
+        browLeft.rotation.z = 0.1;
+        headGroup.add(browLeft);
+
+        const browRight = new THREE.Mesh(browGeo, hairMat);
+        browRight.position.set(0.2, 0.22, 0.52);
+        browRight.rotation.z = -0.1;
+        headGroup.add(browRight);
+
+        // 5. Mouth (Smile)
+        const mouthGeo = new THREE.TorusGeometry(0.1, 0.02, 16, 32, Math.PI);
+        const mouth = new THREE.Mesh(mouthGeo, blackMat);
+        mouth.position.set(0, -0.15, 0.48);
+        mouth.rotation.set(0, 0, Math.PI); // Invert U shape to smile
+        headGroup.add(mouth);
+
+        // 6. Neck
+        const neckGeo = new THREE.CylinderGeometry(0.15, 0.15, 0.3, 32);
+        const neck = new THREE.Mesh(neckGeo, skinMat);
+        neck.position.y = -0.6;
+        headGroup.add(neck);
+
+        // HEAD DONE -> Add to Group
+        headGroup.position.set(0, 1.2, 0); // Position Head Group on top of body
+        charGroup.add(headGroup);
+
+        // 7. Body / Torso
+        const bodyGeoRound = new THREE.CylinderGeometry(0.25, 0.45, 0.9, 32);
+        const torso = new THREE.Mesh(bodyGeoRound, shirtMat);
+        torso.position.y = 0.4;
+        torso.castShadow = true;
+        charGroup.add(torso);
+
+        // 8. Arms
+        const armGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 32);
+        
+        // Left Arm
+        const armLeft = new THREE.Mesh(armGeo, shirtMat);
+        armLeft.position.set(-0.45, 0.4, 0);
+        armLeft.rotation.z = 0.3;
+        charGroup.add(armLeft);
+
+        // Hand Left
+        const handGeo = new THREE.SphereGeometry(0.12, 16, 16);
+        const handLeft = new THREE.Mesh(handGeo, skinMat);
+        handLeft.position.set(0, -0.45, 0);
+        armLeft.add(handLeft);
+
+        // Right Arm 
+        const armRight = new THREE.Mesh(armGeo, shirtMat);
+        armRight.position.set(0.45, 0.4, 0);
+        armRight.rotation.z = -0.3;
+        charGroup.add(armRight);
+
+        // Hand Right
+        const handRight = new THREE.Mesh(handGeo, skinMat);
+        handRight.position.set(0, -0.45, 0);
+        armRight.add(handRight);
+
+
+        scene.add(charGroup);
+
+        // --- ANIMATION ---
+        let isSpeaking = false;
+        let clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const t = clock.getElapsedTime();
+
+            // Idle Animation (Breathing)
+            charGroup.position.y = -0.5 + Math.sin(t * 1.5) * 0.03; // Gentle Up/down
+            
+            // Head Idle
+            if(!isSpeaking) {
+                headGroup.rotation.y = Math.sin(t * 0.5) * 0.05;
+                headGroup.rotation.z = Math.sin(t * 0.3) * 0.02;
+                
+                // Reset mouth to smile
+                mouth.scale.y = 1;
+            } else {
+                // Speaking Animation
+                headGroup.rotation.x = Math.sin(t * 10) * 0.05; // Nodding fast
+                
+                // Mouth movement (Fake lip sync)
+                const mouthOpen = 0.5 + Math.sin(t * 20) * 0.5; 
+                mouth.scale.y = mouthOpen; 
+                
+                // Body sway energy
+                charGroup.rotation.y = Math.sin(t * 2) * 0.05;
+                
+                // Arms gestures
+                armRight.rotation.z = -0.3 + Math.sin(t * 5) * 0.1;
+                armLeft.rotation.z = 0.3 - Math.sin(t * 5) * 0.1;
+            }
+
+            // Blinking logic
+            if (Math.random() > 0.99) {
+                eyeLeft.scale.y = 0.1;
+                eyeRight.scale.y = 0.1;
+            } else {
+                eyeLeft.scale.y = 1;
+                eyeRight.scale.y = 1;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // --- SPEECH LOGIC ---
+        // 1. Retrieve the User's Name from the Database
+        const userDB = JSON.parse(localStorage.getItem('climateUserDB') || "[]");
+        // Get the most recent user (last entry in the array)
+        const currentUser = userDB.length > 0 ? userDB[userDB.length - 1] : null;
+        const userName = currentUser ? currentUser.Name : "Friend";
+
+        const greetingsDB = {
+            'en': `Hi, Hello ${userName}, we are Ready to take a Step Towards Climate Action. Lets Save our Beautiful Planet Earth.`,
+            'hi': `नमस्ते, हैलो ${userName}, हम क्लाइमेट एक्शन की ओर एक कदम उठाने के लिए तैयार हैं। आइए हमारी सुंदर पृथ्वी को बचाएं।`,
+            'bn': `হাই, হ্যালো ${userName}, আমরা ক্লাইমেট অ্যাকশনের দিকে একটি পদক্ষেপ নিতে প্রস্তুত। আসুন আমাদের সুন্দর পৃথিবী গ্রহকে বাঁচাই।`, 
+            'es': `Hola, ${userName}, estamos listos para dar un paso hacia la Acción Climática. Salvemos nuestro hermoso planeta Tierra.`,
+            'fr': `Bonjour ${userName}, nous sommes prêts à faire un pas vers l'Action Climatique. Sauvons notre belle planète Terre.`,
+            'de': `Hallo ${userName}, wir sind bereit, einen Schritt in Richtung Klimaschutz zu tun. Lasst uns unseren wunderschönen Planeten Erde retten.`,
+            'zh': `你好 ${userName}，我们准备好迈向气候行动的一步了吗？让我们拯救美丽的地球。`,
+            'ru': `Привет, ${userName}, мы готовы сделать шаг к защите климата. Давайте спасем нашу прекрасную планету Земля.`,
+            'ar': `أهلاً بك يا ${userName}، نحن مستعدون لاتخاذ خطوة نحو العمل المناخي. دعونا نحمي كوكبنا الأرض الجميل.`
+        };
+
+        const userLang = localStorage.getItem('userLanguage') || 'en';
+        let textToSpeak = greetingsDB[userLang] || greetingsDB['en'];
+        
+        document.getElementById('greeting-text').innerText = `"${textToSpeak}"`;
+
+        let speechObj = new SpeechSynthesisUtterance();
+
+        function startExperience() {
+            document.getElementById('start-overlay').style.display = 'none';
+            
+            // Start 3D Animation state
+            isSpeaking = true;
+
+            speechObj.text = textToSpeak;
+            speechObj.lang = userLang;
+            speechObj.volume = 1;
+            speechObj.rate = 0.9;
+            speechObj.pitch = 1.1;
+
+            const voices = window.speechSynthesis.getVoices();
+            const voice = voices.find(v => v.lang.startsWith(userLang));
+            if(voice) speechObj.voice = voice;
+
+            speechObj.onend = function() {
+                isSpeaking = false; 
+            };
+
+            window.speechSynthesis.speak(speechObj);
+        }
+
+        window.speechSynthesis.onvoiceschanged = function() {};
+
+        function goToClimate() {
+            window.location.href = "Starting.html";
+        }
+    </script>
+</body>
+</html>
