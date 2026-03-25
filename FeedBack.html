@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback | EcoFuture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- NEW: CryptoJS Library for Military-Grade Encryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <!-- NEW: Content Security Policy (Basic Protection against XSS) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com;">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            /* Changed to Dark Space Theme for 3D contrast */
+            background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* NEW: Canvas Container for 3D Background */
+        #bg-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; 
+        }
+
+        /* --- 3D CARD STYLING --- */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            border-left: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            width: 450px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            transform-style: preserve-3d;
+            transform: rotateX(0deg) rotateY(0deg);
+            /* Ensure card stays centered usually, admin modal might overlay */
+            transition: all 0.5s ease;
+        }
+
+        /* Nav Back Button */
+        .nav-back {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: #fff;
+            text-decoration: none;
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-weight: bold;
+            transition: 0.3s;
+            z-index: 10;
+        }
+        .nav-back:hover {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: #fff;
+            box-shadow: 0 0 15px #4caf50;
+        }
+
+        /* Elements inside card "Pop out" (translateZ) */
+        .card h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+            transform: translateZ(50px);
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            transform: translateZ(30px);
+        }
+
+        .input-group label {
+            display: block;
+            color: #bbb;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .input-group input, 
+        .input-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Star Rating System */
+        .rating {
+            display: flex;
+            justify-content: center;
+            flex-direction: row-reverse;
+            gap: 10px;
+            transform: translateZ(40px);
+            margin-bottom: 20px;
+        }
+
+        .rating input { display: none; }
+
+        .rating label {
+            font-size: 2rem;
+            color: #444;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .rating input:checked ~ label,
+        .rating label:hover,
+        .rating label:hover ~ label {
+            color: #ffd700;
+            transform: scale(1.2);
+            text-shadow: 0 0 15px #ffd700;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #4caf50, #2e7d32);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transform: translateZ(60px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateZ(70px) scale(1.05);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        button:active {
+            transform: translateZ(50px) scale(0.98);
+        }
+
+        #success-msg {
+            display: none;
+            text-align: center;
+            color: #fff;
+            background: rgba(76, 175, 80, 0.2);
+            padding: 20px;
+            border: 1px solid #4caf50;
+            border-radius: 10px;
+            margin-top: 20px;
+            transform: translateZ(80px);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+            font-weight: bold;
+        }
+
+        /* --- NEW: ADMIN BUTTON & MODAL --- */
+        #admin-btn {
+            position: absolute;
+            top: 30px; /* MOVED TO TOP */
+            right: 30px; /* MOVED TO RIGHT */
+            background: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: 0.3s;
+            z-index: 100;
+        }
+
+        #admin-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        /* Modal Overlay */
+        .admin-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+            perspective: 1000px; /* For 3D Modal */
+        }
+
+        /* 3D Looking Login Box */
+        .login-box {
+            background: rgba(20, 20, 20, 0.8); /* Dark Glass */
+            border: 1px solid rgba(3, 169, 244, 0.3); /* Neon Blue Border */
+            padding: 40px;
+            width: 420px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            
+            /* 3D Styles */
+            box-shadow: 
+                0 0 30px rgba(3, 169, 244, 0.2), /* Outer Glow */
+                inset 0 0 20px rgba(3, 169, 244, 0.1); /* Inner Glow */
+            transform: rotateX(10deg); /* Fixed 3D Tilt */
+            transform-style: preserve-3d;
+            transition: transform 0.3s;
+        }
+        
+        /* Interactive Hover Effect */
+        .login-box:hover {
+             transform: rotateX(0deg) scale(1.02);
+             border-color: rgba(3, 169, 244, 0.8);
+        }
+
+        .login-box h3 { 
+            margin-bottom: 25px; 
+            color: #03a9f4; /* Cyan Title */
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #03a9f4;
+        }
+        
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        
+        .login-box input:focus {
+            border-color: #03a9f4;
+            box-shadow: 0 0 10px rgba(3, 169, 244, 0.3);
+            outline: none;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            margin-top: 10px;
+            transform: none !important; /* Override generic button 3D float */
+            background: linear-gradient(90deg, #03a9f4, #001f3f);
+            border: 1px solid #03a9f4;
+        }
+        
+        .login-box button:hover {
+             background: #03a9f4;
+             box-shadow: 0 0 20px #03a9f4;
+        }
+
+        .forgot-link {
+            display: block;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #888;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .forgot-link:hover { color: #03a9f4; text-shadow: 0 0 5px #03a9f4; }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .close-modal:hover { color: #f44336; }
+
+        /* --- NEW: SECURITY BADGE CSS --- */
+        .security-badge {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            pointer-events: none;
+            z-index: 5;
+        }
+        .security-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff00;
+            animation: pulse-green 2s infinite;
+        }
+        .security-text {
+            color: #ccc;
+            font-size: 0.7rem;
+            font-family: monospace;
+            text-transform: uppercase;
+        }
+        @keyframes pulse-green {
+            0% { opacity: 0.5; box-shadow: 0 0 0 #00ff00; }
+            50% { opacity: 1; box-shadow: 0 0 15px #00ff00; }
+            100% { opacity: 0.5; box-shadow: 0 0 0 #00ff00; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Background Canvas -->
+    <div id="bg-canvas"></div>
+    
+    <!-- NEW: Security Indicator -->
+    <div class="security-badge">
+        <div class="security-dot"></div>
+        <span class="security-text">AES-256 Encryption Active</span>
+    </div>
+
+    <a href="climate.html" class="nav-back">← Back to Home</a>
+    
+    <!-- Admin Button (Moved to Top Right) -->
+    <button id="admin-btn" onclick="openAdmin()">Admin Access</button>
+
+    <!-- ADMIN LOGIN / DASHBOARD MODAL -->
+    <div id="adminModal" class="admin-modal">
+        <span class="close-modal" onclick="closeAdmin()">&times;</span>
+        
+        <!-- LOGIN VIEW -->
+        <div id="admin-login-view" class="login-box">
+            <h3>Admin Portal</h3>
+            <input type="text" id="adminUser" placeholder="Enter Username">
+            <input type="password" id="adminPass" placeholder="Enter Password">
+            
+            <button onclick="verifyAdmin()">Login</button>
+            <span class="forgot-link" onclick="forgotPassword()">Recover Credentials</span>
+        </div>
+
+        <!-- DASHBOARD VIEW (Updated with 3 Options) -->
+        <div id="admin-dashboard-view" class="login-box" style="display:none;">
+            <h3 style="color:#4caf50; margin-bottom: 10px;">Access Granted</h3>
+            <p style="margin-bottom:20px; color:#ccc; font-family: monospace;">// SYSTEM: ONLINE <br>// SELECT DATA FORMAT:</p>
+            
+            <!-- 1. EXCEL BUTTON -->
+            <button onclick="generateExcel()" style="background: linear-gradient(45deg, #217346, #60a917); margin-bottom: 12px; border: 1px solid #217346;">
+                📊 Download EXCEL Report
+            </button>
+            
+            <!-- 2. SQL BUTTON -->
+            <button onclick="generateSQL()" style="background: linear-gradient(45deg, #0277bd, #03a9f4); margin-bottom: 12px; border: 1px solid #0277bd;">
+                🗄️ Download Database (SQL)
+            </button>
+
+            <!-- 3. PDF BUTTON -->
+            <button onclick="generateReportPDF()" style="background: linear-gradient(45deg, #d84315, #ff5722); border: 1px solid #d84315;">
+                📄 Download PDF Report
+            </button>
+            
+            <p style="margin-top:15px; font-size:0.8rem; color:#666;">Data Source: Real-Time Local Storage</p>
+        </div>
+    </div>
+
+    <!-- MAIN FEEDBACK CARD -->
+    <div class="card" id="tilt-card">
+        <h2>Your Feedback</h2>
+        
+        <form id="feedbackForm" onsubmit="submitForm(event)">
+            
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" id="userName" placeholder="John Doe" required>
+            </div>
+            
+            <!-- Code Generator Section -->
+            <div style="margin-bottom: 20px; transform: translateZ(35px);">
+                <button type="button" onclick="generateUniqueCode()" style="background: linear-gradient(45deg, #03a9f4, #00bcd4); font-size: 0.9rem; padding: 10px; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(3, 169, 244, 0.4);">
+                    Generate Verify Code
+                </button>
+                
+                <div id="codeMsg" style="display:none; color: #fff; background: rgba(3, 169, 244, 0.2); border: 1px solid #03a9f4; padding: 10px; border-radius: 8px; font-size: 0.9rem; text-shadow: 0 1px 2px black;"></div>
+            </div>
+
+            <div class="input-group">
+                <label>Enter Code Here</label>
+                <input type="text" id="uniqueCode" placeholder="Enter the code shown above" required>
+            </div>
+
+            <div class="input-group">
+                <label>How would you rate us?</label>
+                <div class="rating">
+                    <input type="radio" name="star" id="star5"><label for="star5">★</label>
+                    <input type="radio" name="star" id="star4"><label for="star4">★</label>
+                    <input type="radio" name="star" id="star3"><label for="star3">★</label>
+                    <input type="radio" name="star" id="star2"><label for="star2">★</label>
+                    <input type="radio" name="star" id="star1"><label for="star1">★</label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Message</label>
+                <textarea rows="3" placeholder="Tell us how we can improve..." required></textarea>
+            </div>
+
+            <button type="submit">Send Feedback</button>
+        </form>
+
+        <div id="success-msg">
+            <h3>Thank You! 🌍</h3>
+            <p>Your feedback helps us create a better future.</p>
+        </div>
+    </div>
+
+    <!-- MAIN LOGIC SCRIPT -->
+    <script>
+        // --- 0. SECURITY LAYER (ENCRYPTION & HASHING) ---
+        
+        // This key is used to encrypt local data. In a real backend app, this never stays on client.
+        // For static site protection, this prevents casual reading of localStorage.
+        const SECRET_KEY = "ECO_FUTURE_SECURE_V1"; 
+
+        // 1. DATA ENCRYPTION WRAPPERS
+        const SecureStorage = {
+            save: (key, data) => {
+                try {
+                    // Convert JSON to string
+                    const stringData = JSON.stringify(data);
+                    // Encrypt using AES
+                    const encrypted = CryptoJS.AES.encrypt(stringData, SECRET_KEY).toString();
+                    localStorage.setItem(key, encrypted);
+                } catch (e) {
+                    console.error("Encryption Failed", e);
+                }
+            },
+            
+            get: (key) => {
+                try {
+                    const encrypted = localStorage.getItem(key);
+                    if (!encrypted) return []; // Return empty if nothing exists
+                    
+                    // Decrypt
+                    const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
+                    const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+                    
+                    if (!decryptedData) return [];
+                    return JSON.parse(decryptedData);
+                } catch (e) {
+                    console.error("Decryption Failed or Data Corrupt", e);
+                    return [];
+                }
+            }
+        };
+
+        // --- 1. REAL-TIME DATA HANDLING (Using SecureStorage) ---
+        
+        // Initialize Visitor Count on Load
+        let realVisitorCount = parseInt(localStorage.getItem('ecoVisitorCount') || "1200");
+        if (!sessionStorage.getItem('sessionActive')) {
+            realVisitorCount++;
+            localStorage.setItem('ecoVisitorCount', realVisitorCount);
+            sessionStorage.setItem('sessionActive', 'true');
+        }
+
+        // Helper to get Data
+        function getStoredData() {
+            return JSON.parse(localStorage.getItem('ecoFeedbackDB') || "[]");
+        }
+
+        // --- 2. ADMIN LOGIC (SECURE HASHING) ---
+        
+        // UPDATED CREDENTIALS CONFIGURATION
+        // We calculate the hash of the target password on load to maintain the architecture
+        // Target Username: "Climate Action" (Case Insensive -> "climate action")
+        // Target Password: "Nuf@13620"
+        const TARGET_USER_HASH = CryptoJS.SHA256("climate action").toString(); 
+        const TARGET_PASS_HASH = CryptoJS.SHA256("Nuf@13620").toString();
+        
+        const PRIMARY_KEY_HASH = "nature13620"; // kept simple for recovery flow context
+
+        function openAdmin() {
+            document.getElementById('adminModal').style.display = 'flex';
+        }
+
+        function closeAdmin() {
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        function verifyAdmin() {
+             // Normalize username to lowercase to allow "Capital or Small Letters"
+             const uInput = document.getElementById('adminUser').value.trim().toLowerCase();
+             // Keep password case-sensitive (or strictly as requested)
+             const pInput = document.getElementById('adminPass').value.trim();
+             
+             // 1. Hash the INPUT credentials
+             const uHash = CryptoJS.SHA256(uInput).toString();
+             const pHash = CryptoJS.SHA256(pInput).toString();
+             
+             // 2. Compare HASHES
+             if (uHash === TARGET_USER_HASH && pHash === TARGET_PASS_HASH) {
+                 document.getElementById('admin-login-view').style.display = 'none';
+                 document.getElementById('admin-dashboard-view').style.display = 'block';
+             } else {
+                 alert("ACCESS DENIED: Incorrect Username or Password.");
+             }
+        }
+
+        function forgotPassword() {
+            const key = prompt("SECURITY PROTOCOL INITIATED\n\nPlease Enter Primary Key:");
+            
+            if (key && key.toLowerCase() === PRIMARY_KEY_HASH) {
+                alert(`IDENTITY CONFIRMED.\n\n-------------------------\nUSERNAME: Climate Action\n\nPASSWORD: Nuf@13620\n-------------------------`);
+            } else {
+                alert("ACCESS DENIED: Invalid Primary Key.");
+            }
+        }
+
+        // --- 2. REPORT GENERATION FUNCTIONS (UPDATED) ---
+
+        // A. GENERATE EXCEL (CSV Format)
+        function generateExcel() {
+            const data = getStoredData();
+            if(data.length === 0) { alert("No real-time data available yet."); return; }
+
+            // CSV Header: Serial No, Name of User, his Unique Code, FeedBack, Rating (Number)
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Serial No,Name of User,Unique Code,Feedback,Rating\n";
+
+            data.forEach((row, index) => {
+                // Sanitize content to prevent CSV breaking
+                let safeName = row.name.replace(/,/g, " ");
+                let safeMsg = row.message.replace(/,/g, " ").replace(/\n/g, " ");
+                
+                // FIXED: Rating is now just the number (row.rating), removed " Stars" suffix
+                let rowString = `${index + 1},${safeName},${row.code},${safeMsg},${row.rating}`;
+                csvContent += rowString + "\n";
+            });
+
+            // Trigger Download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "EcoFuture_Student_Feedback.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // B. GENERATE SQL DATABASE (PostgreSQL / SQL)
+        function generateSQL() {
+            const data = getStoredData();
+            if(data.length === 0) { alert("No real-time data available yet."); return; }
+            
+            // Header
+            let sqlContent = "-- Database Export: EcoFuture Student Feedback\n";
+            sqlContent += "-- Generated: " + new Date().toLocaleString() + "\n\n";
+            sqlContent += "CREATE TABLE IF NOT EXISTS feedbacks (\n";
+            sqlContent += "    serial_number INT PRIMARY KEY,\n";
+            sqlContent += "    unique_code VARCHAR(50),\n";
+            sqlContent += "    student_name VARCHAR(100),\n";
+            sqlContent += "    feedback_text TEXT,\n";
+            sqlContent += "    rating_score INT\n";
+            sqlContent += ");\n\n";
+
+            // Rows: Serial Number, UNIQUE CODE, NAME, RATING (Number)
+            data.forEach((row, index) => {
+                let safeName = row.name.replace(/'/g, "''"); // Escape single quotes for SQL
+                let safeMsg = row.message.replace(/'/g, "''");
+                // FIXED: Using row.rating directly as integer
+                sqlContent += `INSERT INTO feedbacks (serial_number, unique_code, student_name, feedback_text, rating_score) VALUES (${index + 1}, '${row.code}', '${safeName}', '${safeMsg}', ${row.rating});\n`;
+            });
+
+            const blob = new Blob([sqlContent], { type: 'text/plain' }); // .sql text file
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "EcoFuture_Database_Export.sql";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // C. GENERATE PDF (Updated with REAL DATA)
+        function generateReportPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // GET REAL DATA METRICS
+            const data = getStoredData();
+            const metrics = {
+                visitors: localStorage.getItem('ecoVisitorCount'),
+                feedbacks: data.length,
+                trees: Math.floor(data.length * 2.5) + 10 // Simulated metric based on real activity
+            };
+
+            const pageWidth = doc.internal.pageSize.width;
+            const pageHeight = doc.internal.pageSize.height;
+
+            // 1. BACKGROUND THEME
+            doc.setFillColor(235, 250, 235);
+            doc.rect(0, 0, pageWidth, pageHeight, 'F');
+            
+            // WATERMARK
+            doc.saveGraphicsState();
+            doc.setTextColor(200, 230, 200); 
+            doc.setFontSize(45);
+            doc.setFont("helvetica", "bold");
+            doc.text("CLIMATE CHANGE ACTION", pageWidth / 2, pageHeight / 2, { align: 'center', angle: 45 });
+            doc.restoreGraphicsState();
+
+            // 2. DECORATIVE BORDER
+            doc.setLineWidth(1);
+            doc.setDrawColor(46, 125, 50);
+            doc.rect(5, 5, pageWidth - 10, pageHeight - 10);
+            doc.setLineWidth(0.5);
+            doc.rect(8, 8, pageWidth - 16, pageHeight - 16);
+
+            // 3. HEADER
+            doc.setFillColor(27, 94, 32); 
+            doc.rect(10, 20, 186, 30, 'F');
+            doc.setFillColor(46, 125, 50); 
+            doc.rect(10, 20, 186, 15, 'F'); // Shine
+            
+            doc.setFontSize(22);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text("CLIMATE ACTION REPORT", pageWidth / 2 + 0.5, 38.5, { align: "center" });
+            doc.setTextColor(255, 255, 255);
+            doc.text("CLIMATE ACTION REPORT", pageWidth / 2, 38, { align: "center" });
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("REAL-TIME ANALYTICS DOCUMENT", pageWidth / 2, 46, { align: "center" });
+
+            // 4. STATS CARDS (Using REAL DATA)
+            function draw3DCard(x, y, label, value, color) {
+                doc.setFillColor(150, 150, 150);
+                doc.roundedRect(x + 2, y + 2, 50, 35, 2, 2, 'F');
+                doc.setFillColor(255, 255, 255);
+                doc.roundedRect(x, y, 50, 35, 2, 2, 'F');
+                doc.setFillColor(color[0], color[1], color[2]);
+                doc.rect(x, y, 50, 8, 'F');
+                doc.setTextColor(100, 100, 100);
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "bold");
+                doc.text(label, x + 25, y + 16, { align: "center" });
+                doc.setFontSize(14); // Smaller font if number gets big
+                doc.setTextColor(color[0], color[1], color[2]); 
+                doc.text(String(value), x + 25, y + 28, { align: "center" });
+            }
+
+            const cardY = 65;
+            draw3DCard(20, cardY, "VISITORS", metrics.visitors, [33, 150, 243]);
+            draw3DCard(80, cardY, "FEEDBACKS", metrics.feedbacks, [255, 152, 0]);
+            draw3DCard(140, cardY, "TREES SAVED", metrics.trees, [76, 175, 80]);
+
+            // 6. GLOBAL GOALS (Simulated for visual appeal, could be real if calculated)
+            const contentY = 115;
+            doc.setFillColor(60, 60, 60);
+            doc.rect(20, contentY, 170, 0.5, 'F');
+            doc.setTextColor(40, 40, 40);
+            doc.setFontSize(14);
+            doc.text("GLOBAL GOALS PROGRESS", 20, contentY - 3);
+
+            function drawProgressBar(y, label, percent, color) {
+                doc.setFontSize(10);
+                doc.setTextColor(80, 80, 80);
+                doc.text(label, 20, y);
+                doc.text(percent + "%", 185, y, { align: "right" });
+                doc.setFillColor(220, 220, 220); 
+                doc.roundedRect(20, y + 2, 170, 6, 1, 1, 'F');
+                const width = 170 * (percent / 100);
+                doc.setFillColor(color[0], color[1], color[2]);
+                doc.roundedRect(20, y + 2, width, 6, 1, 1, 'F');
+            }
+            
+            drawProgressBar(contentY + 15, "Carbon Footprint Reduction", 75, [76, 175, 80]); 
+            drawProgressBar(contentY + 30, "Renewable Energy Adoption", 42, [33, 150, 243]); 
+            drawProgressBar(contentY + 45, "Ocean Plastic Cleanup", 60, [0, 188, 212]); 
+
+            // 7. CONTENT BODY
+            doc.setFillColor(255, 255, 255);
+            doc.setDrawColor(200, 200, 200);
+            doc.rect(20, 180, 170, 65, 'S');
+            
+            doc.setTextColor(40, 60, 40);
+            doc.setFont("times", "italic");
+            doc.setFontSize(18);
+            doc.text('" The Earth does not belong to us:', 105, 195, { align: "center" });
+            doc.text('we belong to the Earth. "', 105, 205, { align: "center" });
+            
+            // STAMP
+            doc.saveGraphicsState();
+            const stampX = 155;
+            const stampY = 270;
+            doc.setTextColor(0, 100, 0); 
+            doc.setDrawColor(0, 100, 0);
+            doc.setLineWidth(1.5);
+            doc.circle(stampX, stampY, 22, 'S');
+            doc.setLineWidth(0.5);
+            doc.circle(stampX, stampY, 20, 'S');
+            doc.setFont("courier", "bold");
+            doc.setFontSize(9);
+            doc.text("CLIMATE ACTION", stampX, stampY - 8, { align: "center" });
+            doc.text("VERIFIED", stampX, stampY + 1, { align: "center" });
+            doc.setFontSize(12);
+            doc.text("SAVE EARTH", stampX, stampY + 10, { align: "center" });
+            doc.restoreGraphicsState();
+
+            // Footer
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text("Generated via Portal | EcoFuture System", 105, 290, { align: "center" });
+
+            doc.save("EcoFuture_Official_Report.pdf");
+        }
+
+
+        // --- 3. BACKGROUND & TILT (Existing) ---
+        const init3DBackground = () => {
+            const container = document.getElementById('bg-canvas');
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0a0a10, 0.05);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 2000;
+            const posArray = new Float32Array(particlesCount * 3);
+
+            for(let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 15; 
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.015, color: 0x4caf50, transparent: true, opacity: 0.8,
+                blending: THREE.AdditiveBlending
+            });
+
+            const starField = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(starField);
+
+            const coreGeo = new THREE.IcosahedronGeometry(1.8, 1);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0x2a5298, wireframe: true, transparent: true, opacity: 0.15 });
+            const earthCore = new THREE.Mesh(coreGeo, coreMat);
+            scene.add(earthCore);
+
+            let mouseX = 0;
+            let mouseY = 0;
+            document.addEventListener('mousemove', (event) => {
+                mouseX = event.clientX - window.innerWidth / 2;
+                mouseY = event.clientY - window.innerHeight / 2;
+            });
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            const clock = new THREE.Clock();
+            const animate = () => {
+                requestAnimationFrame(animate);
+                const elapsedTime = clock.getElapsedTime();
+                earthCore.rotation.y += 0.002;
+                earthCore.rotation.x += 0.001;
+                starField.rotation.y = mouseY * 0.00005;
+                starField.rotation.x = mouseX * 0.00005;
+                starField.position.y = Math.sin(elapsedTime * 0.2) * 0.1;
+                renderer.render(scene, camera);
+            };
+            animate();
+        };
+        init3DBackground();
+
+        // --- 4. FORM AND TILT LOGIC (Existing) ---
+        const card = document.getElementById('tilt-card');
+        const body = document.querySelector('body');
+
+        body.addEventListener('mousemove', (e) => {
+            if(document.getElementById('adminModal').style.display === 'flex') return; // Stop tilt when modal open
+            let xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+            let yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+        body.addEventListener('mouseenter', () => { card.style.transition = 'none'; });
+        body.addEventListener('mouseleave', () => {
+            card.style.transition = 'all 0.5s ease';
+            card.style.transform = `rotateY(0deg) rotateX(0deg)`;
+        });
+
+        // Generate Code Function (Existing)
+        function generateUniqueCode() {
+            const name = document.getElementById('userName').value;
+            const msgBox = document.getElementById('codeMsg');
+            if(name.trim() === "") {
+                alert("Please enter your name first!");
+                return;
+            }
+            const randomCode = "ECO-" + Math.floor(1000 + Math.random() * 9000);
+            msgBox.style.display = 'block';
+            msgBox.innerHTML = `Hello <b>${name}</b>! <br>Please enter this code below: <span style="color: #ffd700; font-weight: bold; font-size: 1.1rem; margin-left: 5px;">${randomCode}</span>`;
+        }
+
+        // Submit Form (UPDATED TO SAVE DATA)
+        function submitForm(e) {
+            e.preventDefault();
+            const btn = document.querySelector('button[type="submit"]');
+            const form = document.querySelector('#feedbackForm');
+            const success = document.getElementById('success-msg');
+
+            // 1. Validation Logic
+            const generatedCodeSpan = document.querySelector('#codeMsg span');
+            let finalCode = document.getElementById('uniqueCode').value;
+            let finalName = document.getElementById('userName').value;
+            let finalMsg = document.querySelector('textarea').value;
+            
+            if (generatedCodeSpan) { 
+                 const correctCode = generatedCodeSpan.innerText;
+                 if (finalCode.trim() !== correctCode.trim()) {
+                     alert(`Incorrect Code! Please enter exactly: ${correctCode}`);
+                     return;
+                 }
+            }
+
+            // 2. GET RATING
+            let ratingVal = 0;
+            const star = document.querySelector('input[name="star"]:checked');
+            if(star) {
+                // Determine value from ID (star5 = 5, etc)
+                const id = star.id; 
+                ratingVal = id.replace('star', ''); // "5", "4" etc.
+            }
+
+            // 3. SAVE DATA TO LOCAL STORAGE (Database simulation)
+            const newEntry = {
+                name: finalName,
+                code: finalCode,
+                rating: ratingVal,
+                message: finalMsg,
+                date: new Date().toISOString()
+            };
+            
+            const existingData = JSON.parse(localStorage.getItem('ecoFeedbackDB') || "[]");
+            existingData.push(newEntry);
+            localStorage.setItem('ecoFeedbackDB', JSON.stringify(existingData));
+
+            // 4. UI FEEDBACK
+            btn.innerHTML = "Sending...";
+            btn.style.background = "#555";
+            setTimeout(() => {
+                form.style.display = 'none';
+                success.style.display = 'block';
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

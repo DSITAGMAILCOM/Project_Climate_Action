@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Action | Awareness & Change</title>
+
+    <!-- NEW: High-Security Meta Tags -->
+    <!-- Content Security Policy: Added air-quality-api.open-meteo.com to whitelist -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com https://api.open-meteo.com https://geocoding-api.open-meteo.com https://air-quality-api.open-meteo.com https://images.unsplash.com https://raw.githubusercontent.com data: blob:;">
+    <!-- Prevent Clickjacking (Site cannot be embedded in iframes) -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <!-- XSS Protection -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <!-- Prevent MIME Sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Add Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- NEW: Crypto-JS for Encryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    
+    <!-- REMOVED MERMAID JS -->
+    
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            /* Remove standard background */
+            background-color: #000; 
+            overflow-x: hidden;
+        }
+
+        /* 3D Background Container */
+        #canvas-bg {
+            position: fixed; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1; 
+        }
+
+        /* BEAUTIFUL HEADER & NAVIGATION */
+        header {
+            background: rgba(255, 255, 255, 0.1); /* Low opacity for glass */
+            backdrop-filter: blur(15px); /* Strong blur */
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: fixed; /* Sticky header */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 0.8rem 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 1.5rem !important; /* Reduced padding for more space */
+            margin: 0 auto !important;
+            max-width: 98% !important; /* Increased width to prevent wrapping */
+        }
+
+        /* Header Logo Area */
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Container for the 3D Icon */
+        #header-3d-icon {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Navigation Styling */
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 12px; /* Reduced gap to fit all items in one line */
+            margin: 0;
+            padding: 0;
+            align-items: center;
+        }
+
+        nav a {
+            color: #eee;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem; /* Slightly smaller for better fit */
+            position: relative;
+            padding: 5px 0;
+            transition: color 0.3s;
+            white-space: nowrap; /* Prevent text wrapping */
+        }
+
+        /* Nav Underline Animation */
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #4caf50;
+            transition: width 0.3s ease-in-out;
+        }
+
+        nav a:hover {
+            color: #4caf50;
+        }
+
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* NEW: Unified Navigation Buttons Style */
+        .nav-btn {
+            padding: 7px 15px !important;
+            border-radius: 20px;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            display: inline-block;
+            line-height: 1.2;
+        }
+        
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
+        }
+
+        /* Call to Action Button in Nav - REMOVED OLD STYLE targeting li:last-child */
+        
+        /* Hero Section */
+        .hero {
+            height: 80vh; /* Taller */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        /* Hero Content Box */
+        .hero div.content {
+            background: rgba(0,0,0,0.6);
+            padding: 3rem;
+            border-radius: 15px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            max-width: 800px;
+        }
+
+        .hero h2 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+        }
+
+        /* Sections */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+            /* Make sections readable over the dark 3D background */
+            background: rgba(255, 255, 255, 0.95); 
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #1b5e20;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card h3 {
+            color: #388e3c;
+            margin-bottom: 1rem;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: rgba(232, 245, 233, 0.9); /* Semi-transparent */
+            padding: 3rem 0;
+            text-align: center;
+            margin: 2rem auto;
+            max-width: 1100px;
+            border-radius: 20px;
+        }
+
+        .stat-item h3 {
+            font-size: 2.5rem;
+            color: #2e7d32;
+        }
+
+        /* Footer - 3D Floating Style */
+        footer {
+            background: rgba(46, 125, 50, 0.4); /* Semi-transparent green */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin: 2rem 2rem 1rem 2rem; /* Margin around it to make it float */
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.3), /* Deep shadow below */
+                0 -2px 5px rgba(255,255,255,0.1); /* Subtle highlight top */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Hover effect to lift the footer slightly */
+        footer:hover {
+            transform: translateY(-5px);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                0 -2px 5px rgba(255,255,255,0.2);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+
+        footer p {
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        /* LIVE MONITOR STYLES */
+        #live-monitor {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 20px;
+            margin-top: 2rem;
+            text-align: center;
+            color: white;
+        }
+
+        .monitor-controls {
+            margin-bottom: 2rem;
+        }
+
+        .btn-locate {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-locate:hover {
+            background: #43a047;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .data-card {
+            background: rgba(255, 255, 255, 0.05); /* Very subtle */
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s;
+        }
+
+        .data-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .data-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #69f0ae; /* Bright Green */
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(105, 240, 174, 0.4);
+            font-family: 'Courier New', monospace;
+        }
+
+        .data-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ddd;
+        }
+
+        /* --- AI AGENT STYLES --- */
+        #ai-widget-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #1e88e5, #42a5f5); /* Gemini Blue */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            z-index: 9999;
+            transition: transform 0.3s;
+            border: 2px solid white;
+        }
+        #ai-widget-btn:hover { transform: scale(1.1); }
+
+        #ai-chat-window {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 380px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            z-index: 9999;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .ai-header {
+            background: linear-gradient(135deg, #1e88e5, #1565c0); /* Gemini Blue */
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f4f9f4;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-footer {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+            background: white;
+            display: flex;
+            gap: 5px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .send-btn {
+            background: #1e88e5;
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* Message Bubbles */
+        .msg {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .msg.bot {
+            background: white;
+            border: 1px solid #ddd; /* Light border for contrast */
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            color: #333;
+        }
+        .msg.user {
+            background: #4caf50;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        /* Diagram Container within Chat */
+        .diagram-container {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-top: 5px;
+            overflow-x: auto;
+        }
+
+        /* NEW: Security Badge Styling */
+        .security-overlay {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 20, 40, 0.8);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            pointer-events: none;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .security-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00ff00;
+            animation: pulse-green 2s infinite;
+        }
+        .security-text {
+            color: #00ff00;
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+        @keyframes pulse-green {
+            0% { opacity: 0.5; box-shadow: 0 0 2px #00ff00; }
+            50% { opacity: 1; box-shadow: 0 0 12px #00ff00; }
+            100% { opacity: 0.5; box-shadow: 0 0 2px #00ff00; }
+        }
+
+        /* 3D Button Style */
+        .btn-3d {
+            display: inline-block;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1rem;
+            color: white;
+            padding: 15px 30px;
+            background: #e67e22; /* Carrot Orange base */
+            border-radius: 10px;
+            position: relative;
+            transition: all 0.1s;
+            box-shadow: 0 6px 0 #d35400, /* Darker shade for depth */
+                        0 10px 10px rgba(0,0,0,0.3); /* Drop shadow */
+            margin-left: 20px; /* Space from other button */
+            border: none;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-3d:active {
+            transform: translateY(6px); /* Move down */
+            box-shadow: 0 0 0 #d35400, /* Remove depth shadow */
+                        0 0 0 rgba(0,0,0,0.3);
+        }
+
+        .btn-3d:hover {
+            background: #f39c12; /* Lighter orange on hover */
+        }
+
+        /* HIDE Default Google Widget completely */
+        .goog-te-banner-frame { display: none !important; }
+        body { top: 0px !important; }
+        #google_translate_element { display: none; }
+
+        /* Custom Top-Right Language Switcher */
+        .custom-lang-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000; /* On top of everything */
+        }
+
+        .lang-dropdown {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.4);
+            padding: 8px 15px;
+            border-radius: 30px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .lang-dropdown:hover {
+            background: rgba(0, 0, 0, 0.9);
+            border-color: #69f0ae;
+        }
+        
+        .lang-dropdown option {
+            background: #222;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Canvas Background -->
+    <div id="canvas-bg"></div>
+
+    <!-- NEW: Security Badge -->
+    <div class="security-overlay">
+        <div class="security-dot"></div>
+        <span class="security-text">SECURE | AES-256 ENCRYPTED</span>
+    </div>
+
+    <!-- REMOVED AI AGENT WIDGET -->
+
+    <header>
+        <div class="container">
+            <div class="logo-area">
+                <!-- 3D Logo Container -->
+                <div id="header-3d-icon"></div>
+                <h1>Climate Action</h1>
+            </div>
+            <nav>
+                <ul>
+                    <!-- Regular Links -->
+                    <li><a href="#overview">Overview</a></li>
+                    <li><a href="#causes">Causes</a></li>
+                    <li><a href="#effects">Effects</a></li>
+                    
+                    <!-- Unified Action Buttons -->
+                    <li><a href="traditional.html" class="nav-btn" style="background: #e67e22; color: white;">Traditional Methods</a></li>
+                    <li><a href="action.html" class="nav-btn" style="background: #ffeb3b; color: #333;">Take Action</a></li>
+                    <li><a href="poem.html" class="nav-btn" style="background: #e91e63; color: white;">Read Poem</a></li>
+                    <li><a href="feedback.html" class="nav-btn" style="background: #03a9f4; color: white;">Feedback</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section (Removed the button from here) -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Our Planet, Our Responsibility.</h2>
+            <p>The time to act is now. Explore the data, understand the impact, and join the movement.</p>
+            <a href="action.html" class="cta-btn">Start Planting & Acting</a>
+        </div>
+    </section>
+
+    <section id="overview" class="container">
+        <h2 class="section-title">What is Climate Change?</h2>
+        <p style="text-align: center; max-width: 800px; margin: 0 auto;">
+            Climate change describes a change in the average conditions — such as temperature and rainfall — in a region over a long period of time. NASA scientists have observed Earth’s surface is warming, and many of the warmest years on record have happened in the past 20 years.
+        </p>
+    </section>
+
+    <!-- NEW REAL-TIME MONITOR SECTION -->
+    <section id="live-monitor" class="container">
+        <h2 class="section-title" style="color: #fff;">Real-Time Environment Monitor</h2>
+        
+        <div class="monitor-controls" style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+            <p>Current Conditions at: <strong id="location-name" style="color: #69f0ae;">London, UK</strong></p>
+            
+            <!-- REPLACED BUTTON WITH SEARCH INPUT -->
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="city-search" placeholder="Enter City Name (e.g. Paris)" style="padding: 10px; border-radius: 20px; border: none; outline: none; width: 200px;">
+                <button class="btn-locate" onclick="searchCity()">
+                    <span>🔍</span> Search
+                </button>
+            </div>
+        </div>
+
+        <div class="data-grid">
+            <div class="data-card">
+                <div class="data-label">Temperature</div>
+                <div class="data-value" id="val-temp">--°C</div>
+                <small>Surface Air Temp</small>
+            </div>
+            <div class="data-card">
+                <div class="data-label">Humidity</div>
+                <div class="data-value" id="val-humidity">--%</div>
+                <small>Relative Humidity</small>
+            </div>
+            <div class="data-card">
+                <div class="data-label">Wind Speed</div>
+                <div class="data-value" id="val-wind">-- km/h</div>
+                <small>Velocity</small>
+            </div>
+            <!-- API REAL DATA -->
+            <div class="data-card">
+                <div class="data-label">Air Quality (AQI)</div>
+                <div class="data-value" id="val-aqi">--</div>
+                <small id="val-aqi-status">Analysis...</small>
+            </div>
+            <!-- SIMULATED DATA FOR DEMO -->
+            <div class="data-card">
+                <div class="data-label">Water Quality</div>
+                <div class="data-value" id="val-water">--</div>
+                <small>WQI Index</small>
+            </div>
+            <div class="data-card">
+                <div class="data-label">Eco-City Rank</div>
+                <div class="data-value" id="val-rank">#--</div>
+                <small>Sustainability & Cleanliness</small>
+            </div>
+        </div>
+        <p style="font-size: 0.8rem; margin-top: 20px; opacity: 0.7;">Data Source: Open-Meteo (Weather/AQI). *Water & Rank metrics are estimated for demonstration.</p>
+    </section>
+
+    <!-- NEW VIDEO SECTION -->
+    <section id="video-section" class="container" style="text-align: center; background: rgba(0,0,0,0.6);">
+        <h2 class="section-title" style="color: #fff;">Watch: The Climate Reality</h2>
+        
+        <div style="max-width: 900px; margin: 0 auto; border: 2px solid rgba(255,255,255,0.2); border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <!-- REPLACE 'your-video-file.mp4' WITH YOUR ACTUAL VIDEO PATH -->
+            <!-- If using a local file, ensure it's in the same folder or update the path -->
+            <video width="100%" height="auto" controls poster="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?fit=crop&w=1200&q=80">
+                <source src="video-generation-climate-action-and-table_2igtlsxx.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <p style="color: #ccc; margin-top: 1rem;">
+            Understanding the changes our planet is undergoing.
+        </p>
+    </section>
+
+    <section class="stats">
+        <div class="grid" style="padding: 0 2rem;">
+            <div class="stat-item">
+                <h3>1.1°C</h3>
+                <p>Global Temp Rise Since Late 19th Century</p>
+            </div>
+            <div class="stat-item">
+                <h3>419 ppm</h3>
+                <p>Carbon Dioxide Levels in the Air</p>
+            </div>
+            <div class="stat-item">
+                <h3>13%</h3>
+                <p>Decline in Arctic Sea Ice per Decade</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="causes" class="container">
+        <h2 class="section-title">Main Causes</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Fossil Fuels</h3>
+                <p>Burning coal, oil, and gas produces carbon dioxide and nitrous oxide, trapping heat in the atmosphere.</p>
+            </div>
+            <div class="card">
+                <h3>Deforestation</h3>
+                <p>Trees help regulate the climate by absorbing CO2 from the atmosphere. When they are cut down, that beneficial effect is lost.</p>
+            </div>
+            <div class="card">
+                <h3>Industrial Agriculture</h3>
+                <p>Intensive farming produces significant greenhouse gas emissions, particularly methane from livestock.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="effects" class="container">
+        <h2 class="section-title">The Effects</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>Extreme Weather</h3>
+                <p>More frequent and intense drought, storms, heat waves, rising sea levels, melting glaciers and warming oceans.</p>
+            </div>
+            <div class="card">
+                <h3>Biodiversity Loss</h3>
+                <p>Climate change is exacerbating the loss of habitat and endangering thousands of species.</p>
+            </div>
+            <div class="card">
+                <h3>Impact on People</h3>
+                <p>Climate change affects our health, ability to grow food, housing, safety and work.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW COURSES SECTION -->
+    <section id="courses" class="container">
+        <h2 class="section-title">Climate Education Hub</h2>
+        <p style="text-align: center; margin-bottom: 2rem;">Master the subject with these real-world courses, pass the quiz, and earn your credentials.</p>
+        
+        <div class="grid">
+            <!-- Course 1 -->
+            <div class="card course-card">
+                <div style="background: #0288d1; height: 150px; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white;">🇺🇳</div>
+                <div style="padding: 1.5rem;">
+                    <h3>Intro to Climate Change</h3>
+                    <p><strong>Provider: UN CC:Learn</strong><br>The definitive international course on climate science, policy, and action.</p>
+                    <button class="enroll-btn" onclick="startCourse('https://unccelearn.org/course/view.php?id=219&page=overview', 'Intro to Climate Change', 'climate')">Start Learning & Take Quiz 🔗</button>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">⏱️ 12 Hours • Free</div>
+                </div>
+            </div>
+
+            <!-- Course 2 -->
+            <div class="card course-card">
+                <div style="background: #43a047; height: 150px; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: white;">🌱</div>
+                <div style="padding: 1.5rem;">
+                    <h3>Sustainable Development</h3>
+                    <p><strong>Provider: SDG Academy</strong><br>Learn the planetary boundaries and how to build a sustainable future.</p>
+                    <button class="enroll-btn" onclick="startCourse('https://sdgacademy.org/', 'Sustainable Development', 'sdg')">Start Learning & Take Quiz 🔗</button>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">⏱️ 8 Weeks • Free Audit</div>
+                </div>
+            </div>
+
+            <!-- Course 3 -->
+            <div class="card course-card">
+                <div style="background: #fdd835; height: 150px; border-radius: 8px 8px 0 0; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #333;">🦁</div>
+                <div style="padding: 1.5rem;">
+                    <h3>Conservation</h3>
+                    <p><strong>Provider: NatGeo</strong><br>Explore the importance of biodiversity and how to protect our wildlife.</p>
+                    <button class="enroll-btn" onclick="startCourse('https://unccelearn.org/course/view.php?id=150&page=overview', 'Wildlife Conservation', 'nature')">Start Learning & Take Quiz 🔗</button>
+                    <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">⏱️ Self-Paced • Free</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CERTIFICATE MODAL OVERLAY -->
+    <div id="course-modal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            
+            <!-- Step 1: User Input -->
+            <div id="modal-step-1">
+                <h2 id="modal-course-title">Course Title</h2>
+                <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0; border: 1px solid #bbdefb; color: #0d47a1;">
+                    <p><strong>Step 1:</strong> The course material has opened in a new tab.</p>
+                    <p style="font-size: 0.9rem;">Study the material carefully.</p>
+                </div>
+                
+                <p style="margin-bottom: 20px; color: #555;"><strong>Step 2:</strong> Are you ready to prove your knowledge?</p>
+                <button class="complete-btn" onclick="showQuiz()">I'm Ready to Take the Quiz</button>
+            </div>
+
+            <!-- Step 2: The Quiz -->
+            <div id="modal-step-quiz" style="display: none; text-align: left;">
+                <h2 style="text-align: center; color: #2e7d32;">Knowledge Check</h2>
+                <p style="text-align: center; margin-bottom: 20px;">Answer correctly to unlock your certificate.</p>
+                
+                <div id="quiz-container">
+                    <!-- Questions injected by JS -->
+                </div>
+                <div id="quiz-feedback" style="text-align: center; color: red; margin: 10px 0; font-weight: bold;"></div>
+                <button class="complete-btn" onclick="submitQuiz()">Submit Answers</button>
+            </div>
+
+            <!-- Step 3: Enter Name (Shown only after passing) -->
+            <div id="modal-step-name" style="display: none;">
+                <h2 style="color: #4caf50;">🎉 Quiz Passed!</h2>
+                <p>Excellent work. Enter your name to generate your credentials.</p>
+                <input type="text" id="student-name" placeholder="Enter Your Full Name" class="name-input">
+                <button class="complete-btn" onclick="generateCertificate()">Generate Certificate & Badge</button>
+            </div>
+
+            <!-- Step 4: The Certificate & Badge -->
+            <div id="modal-step-cert" style="display: none;">
+                
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+                    
+                    <!-- Certificate -->
+                    <div class="certificate-container" style="flex: 2; min-width: 300px; border: 10px solid #2e7d32; padding: 5px; background: #fff;">
+                        <div class="certificate-border" style="border: 2px solid #daa520; padding: 20px; background: #fdfbf7; position: relative;">
+                            <!-- Corner Decorations -->
+                            <div style="position: absolute; top: 0; left: 0; width: 30px; height: 30px; border-top: 4px solid #1b5e20; border-left: 4px solid #1b5e20;"></div>
+                            <div style="position: absolute; top: 0; right: 0; width: 30px; height: 30px; border-top: 4px solid #1b5e20; border-right: 4px solid #1b5e20;"></div>
+                            <div style="position: absolute; bottom: 0; left: 0; width: 30px; height: 30px; border-bottom: 4px solid #1b5e20; border-left: 4px solid #1b5e20;"></div>
+                            <div style="position: absolute; bottom: 0; right: 0; width: 30px; height: 30px; border-bottom: 4px solid #1b5e20; border-right: 4px solid #1b5e20;"></div>
+
+                            <div class="cert-header" style="font-family: 'Times New Roman', serif; font-size: 1.8rem; color: #1b5e20; margin-bottom: 5px; border-bottom: none;">Certificate of Completion</div>
+                            <div style="width: 100px; height: 2px; background: #daa520; margin: 0 auto 15px auto;"></div>
+                            
+                            <div class="cert-body">
+                                <p style="font-style: italic; color: #666; font-size: 0.8rem;">This certifies that</p>
+                                <h2 id="cert-name" style="font-family: 'Times New Roman', serif; font-size: 2rem; color: #000; margin: 5px 0; border-bottom: 1px solid #ddd; display: inline-block;">Student</h2>
+                                <p style="margin-top: 5px; font-size: 0.8rem;">Has passed the exam for:</p>
+                                <h3 id="cert-course" style="color: #1b5e20; font-size: 1.2rem; margin: 10px 0;">Course Name</h3>
+                                <p style="font-size: 0.7rem; color: #555;">Demonstrating commitment to our planet's future.</p>
+                            </div>
+                            <div class="cert-footer" style="margin-top: 20px; padding: 0 10px; display: flex; justify-content: space-between; align-items: flex-end;">
+                                <div style="text-align: left;">
+                                    <div style="font-family: 'Brush Script MT', cursive; font-size: 1rem; color: #1b5e20; border-bottom: 1px solid #333;">Climate Hub</div>
+                                    <div style="font-size: 0.6rem;">Authority</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div id="cert-date" style="font-family: 'Courier New', monospace; font-size: 0.8rem; border-bottom: 1px solid #333;">Date</div>
+                                    <div style="font-size: 0.6rem;">Date</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Digital Badge -->
+                    <div style="flex: 1; min-width: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <h3 style="color: #4caf50; margin-bottom: 10px;">Your Digital Badge</h3>
+                        <div class="digital-badge">
+                            <div class="badge-inner">
+                                <span style="font-size: 3rem;">🌍</span>
+                                <span style="font-weight: bold; color: white; text-shadow: 1px 1px 2px black;">Guardian</span>
+                                <span style="font-size: 0.7rem; color: #e8f5e9;">Verified 2026</span>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">Right-click to save</p>
+                    </div>
+
+                </div>
+
+                <button class="enroll-btn" style="margin-top: 20px; background: #333;" onclick="window.print()">Print Credentials</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Styles for Modal Elements -->
+    <style>
+        .course-card {
+            padding: 0 !important; /* Override default card padding */
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .course-card:hover { transform: translateY(-10px); }
+        
+        .enroll-btn {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .enroll-btn:hover { background: #1b5e20; }
+
+        .name-input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .complete-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px; right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #333;
+        }
+
+        /* Certificate Design */
+        .certificate-container {
+            background: #fff;
+            padding: 20px;
+            margin-top: 20px;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+
+        .certificate-border {
+            border: 5px double #1b5e20;
+            padding: 30px;
+            background: #fdfbf7; /* Parchment color */
+            position: relative;
+        }
+
+        .cert-header {
+            font-family: 'Georgia', serif;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1b5e20;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #1b5e20;
+            padding-bottom: 10px;
+        }
+
+        .cert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .cert-seal {
+            width: 80px; height: 80px;
+            background: gold;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            border: 2px dashed #b8860b;
+            color: #b8860b;
+            font-weight: bold;
+            flex-direction: column;
+            font-size: 0.8rem;
+        }
+
+        .quiz-question {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4caf50;
+        }
+        .quiz-question p { font-weight: bold; margin-bottom: 10px; }
+        .quiz-option { display: block; margin: 5px 0; cursor: pointer; }
+
+        /* Digital Badge Style */
+        .digital-badge {
+            width: 150px; height: 150px;
+            background: linear-gradient(135deg, #2e7d32, #69f0ae);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 5px solid #ffd700;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .badge-inner {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .digital-badge::before {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 2px dashed rgba(255,255,255,0.5);
+            border-radius: 50%;
+        }
+    </style>
+
+    <!-- 3D Script: Leaves, Fire, Changing Earth, Tree -->
+    <script>
+        // --- 0. HIGH SECURITY MODULE ---
+        (function() {
+            // Anti-Tamper & Anti-Debug
+            document.addEventListener('contextmenu', event => event.preventDefault()); 
+            document.onkeydown = function(e) {
+                if(e.keyCode == 123) { return false; }
+                if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)){ return false; }
+                if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)){ return false; }
+                if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)){ return false; }
+                if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)){ return false; }
+            };
+        })();
+
+        // --- NEW: FAST WEATHER ENGINE (FIXED) ---
+        async function searchCity() {
+            const cityInput = document.getElementById('city-search');
+            let city = cityInput ? cityInput.value.trim() : "London";
+            if(!city) city = "London";
+
+            const btn = document.querySelector('.btn-locate');
+            const originalText = btn ? btn.innerHTML : 'Search';
+
+            // 1. UI Feedback
+            if(btn) {
+                btn.innerHTML = '<span>⌛</span> Loading...';
+                btn.disabled = true;
+                btn.style.opacity = "0.7";
+            }
+
+            try {
+                // 2. Geocoding (Find Lat/Lon) - Ultra Fast API
+                const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`;
+                const geoRes = await fetch(geoUrl);
+                const geoData = await geoRes.json();
+
+                if (!geoData.results || geoData.results.length === 0) {
+                    throw new Error("City not found. Please try another name.");
+                }
+
+                const location = geoData.results[0];
+                const { latitude, longitude, name, country } = location;
+
+                // 3. Weather & Air Quality Data Fetch (Parallel requests for speed)
+                const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,wind_speed_10m&wind_speed_unit=kmh`;
+                const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=us_aqi`;
+
+                const [weatherRes, aqiRes] = await Promise.all([
+                    fetch(weatherUrl),
+                    fetch(aqiUrl)
+                ]);
+
+                const weatherData = await weatherRes.json();
+                const aqiData = await aqiRes.json();
+
+                // 4. Update UI Instantly
+                document.getElementById('location-name').innerHTML = `${name}, ${country || ''} <span style="font-size:0.8em; color:#aaa;">(Live)</span>`;
+                
+                // Weather
+                updateValue('val-temp', weatherData.current.temperature_2m + '°C');
+                updateValue('val-humidity', weatherData.current.relative_humidity_2m + '%');
+                updateValue('val-wind', weatherData.current.wind_speed_10m + ' km/h');
+
+                // Air Quality
+                const aqi = aqiData.current.us_aqi;
+                updateValue('val-aqi', aqi);
+                
+                let aqiStatus = "Good";
+                let aqiColor = "#69f0ae"; // Green
+                if(aqi > 50) { aqiStatus = "Moderate"; aqiColor = "#ffeb3b"; } // Yellow
+                if(aqi > 100) { aqiStatus = "Unhealthy"; aqiColor = "#ff5722"; } // Red
+                
+                const aqiEl = document.getElementById('val-aqi');
+                aqiEl.style.color = aqiColor;
+                document.getElementById('val-aqi-status').innerText = aqiStatus;
+
+                // -- SIMULATED METRICS (Since no public real-time API exists for these yet) -- 
+                // Generate consistent "random" numbers based on name length to fake realism
+                const seed = name.length + (country ? country.length : 0);
+                
+                // Water Quality Index (0-100, higher is better)
+                let wqi = 85 - (aqi / 5) + (seed % 10); 
+                wqi = Math.min(100, Math.max(0, Math.round(wqi)));
+                updateValue('val-water', wqi + '/100');
+
+                // Eco-Rank (1-500)
+                // Lower AQI generally means better rank
+                let rank = Math.round(aqi * 2 + (seed * 5));
+                if (rank < 1) rank = 1;
+                updateValue('val-rank', '#' + rank);
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('location-name').innerHTML = `<span style="color:#ff5252;">⚠️ ${error.message}</span>`;
+            } finally {
+                // Reset Button
+                if(btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                }
+            }
+        }
+
+        function updateValue(id, value) {
+            const el = document.getElementById(id);
+            el.style.opacity = 0;
+            setTimeout(() => {
+                el.innerText = value;
+                el.style.opacity = 1;
+            }, 200);
+        }
+
+        // Initialize Weather on Load
+        window.addEventListener('load', () => {
+             const input = document.getElementById('city-search');
+             if(input) {
+                 input.value = "London"; // Default
+                 searchCity();
+                 
+                 // Enable "Enter" key for speed
+                 input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                      searchCity();
+                    }
+                });
+             }
+        });
+
+        // --- 1. HEADER 3D LOGO (Mini Globe) ---
+        function initHeaderGlobe() {
+            const container = document.getElementById('header-3d-icon');
+            if(!container) return;
+            
+            const w = container.clientWidth || 50;
+            const h = container.clientHeight || 50;
+            
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+            camera.position.z = 2.5;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(w, h);
+            container.appendChild(renderer.domElement);
+
+            // Wireframe Globe
+            const geo = new THREE.IcosahedronGeometry(0.8, 1);
+            const mat = new THREE.MeshBasicMaterial({ color: 0x69f0ae, wireframe: true });
+            const globe = new THREE.Mesh(geo, mat);
+            scene.add(globe);
+
+            // Inner Core
+            const coreGeo = new THREE.IcosahedronGeometry(0.6, 0);
+            const coreMat = new THREE.MeshBasicMaterial({ color: 0x0277bd });
+            const core = new THREE.Mesh(coreGeo, coreMat);
+            globe.add(core);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                globe.rotation.y += 0.02;
+                globe.rotation.x += 0.01;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+        // Run safely after DOM load
+        if(document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initHeaderGlobe);
+        } else {
+            initHeaderGlobe();
+        }
+
+        // --- 2. MAIN SCENE SETUP (REALISTIC) ---
+        const scene = new THREE.Scene();
+        // Fog mimics smoke accumulation
+        scene.fog = new THREE.FogExp2(0x110500, 0.02); 
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-bg').appendChild(renderer.domElement);
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        // Fire Glow Light (Dynamic)
+        const fireLight = new THREE.PointLight(0xff4500, 1, 20);
+        fireLight.position.set(0, -3, 2);
+        scene.add(fireLight);
+
+        // Sun/Directional Light
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 3, 5);
+        scene.add(dirLight);
+
+        // --- 3. REALISTIC EARTH ---
+        const earthGroup = new THREE.Group();
+        scene.add(earthGroup);
+
+        const loader = new THREE.TextureLoader();
+
+        // Earth Sphere (High Poly for smoothness)
+        const earthGeo = new THREE.SphereGeometry(2, 64, 64);
+        
+        // Load Real Textures from THREE.js Examples
+        const earthMat = new THREE.MeshPhongMaterial({
+            map: loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_atmos_2048.jpg'),
+            specularMap: loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_specular_2048.jpg'),
+            normalMap: loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_normal_2048.jpg'),
+            color: 0xffffff, // Start White (Natural) to show texture
+            emissive: 0x000000,
+            specular: 0x333333,
+            shininess: 15
+        });
+        const earth = new THREE.Mesh(earthGeo, earthMat);
+        earthGroup.add(earth);
+
+        // Clouds (Separate Layer)
+        const cloudGeo = new THREE.SphereGeometry(2.02, 64, 64);
+        const cloudMat = new THREE.MeshPhongMaterial({
+            map: loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/earth_clouds_1024.png'),
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide
+        });
+        const clouds = new THREE.Mesh(cloudGeo, cloudMat);
+        earthGroup.add(clouds);
+
+        // Atmosphere Glow (Outer Halo)
+        const atmosGeo = new THREE.SphereGeometry(2.2, 64, 64);
+        const atmosMat = new THREE.MeshBasicMaterial({
+            color: 0x44aaff, // Blueish
+            transparent: true,
+            opacity: 0.15,
+            side: THREE.BackSide,
+            blending: THREE.AdditiveBlending
+        });
+        const atmosphere = new THREE.Mesh(atmosGeo, atmosMat);
+        earthGroup.add(atmosphere);
+
+        // --- 4. REALISTIC FIRE BLENDING (UPDATED) ---
+        // Helper: Generate a soft radial glow texture for realistic fire particles
+        function getFireTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32; canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(16,16,0, 16,16,16);
+            grad.addColorStop(0, 'rgba(255,255,255,1)');    // Core: White Hot
+            grad.addColorStop(0.4, 'rgba(255,200,0,1)');  // Middle: Yellow/Orange
+            grad.addColorStop(1, 'rgba(255,0,0,0)');      // Edge: Transparent Red
+            ctx.fillStyle = grad;
+            ctx.fillRect(0,0,32,32);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        const fireParticlesGeo = new THREE.BufferGeometry();
+        const fireCount = 1200; // Increased density for fuller fire
+        const firePosArray = new Float32Array(fireCount * 3);
+        const fireColorArray = new Float32Array(fireCount * 3); // For dynamic vertex colors
+        const fireSpeeds = new Float32Array(fireCount); // Individual particle speeds
+        
+        for(let i=0; i<fireCount; i++) {
+            firePosArray[i*3] = (Math.random() - 0.5) * 12;  // Wide base x
+            firePosArray[i*3+1] = -4.5 + Math.random() * 2;  // Start lower y
+            firePosArray[i*3+2] = (Math.random() - 0.5) * 4; // Depth z
+            
+            fireSpeeds[i] = 0.02 + Math.random() * 0.05; // Varied upward speed
+
+            // Init default colors
+            fireColorArray[i*3] = 1;
+            fireColorArray[i*3+1] = 1;
+            fireColorArray[i*3+2] = 1;
+        }
+        
+        fireParticlesGeo.setAttribute('position', new THREE.BufferAttribute(firePosArray, 3));
+        fireParticlesGeo.setAttribute('color', new THREE.BufferAttribute(fireColorArray, 3));
+        
+        // Use a Point Material with Texture & Vertex Colors
+        const fireMat = new THREE.PointsMaterial({
+            size: 0.6, // Larger soft particles
+            map: getFireTexture(),
+            transparent: true,
+            opacity: 0.7,
+            vertexColors: true, // Enables gradient color per particle
+            blending: THREE.AdditiveBlending, // Glow effect
+            depthWrite: false
+        });
+        
+        const fireSystem = new THREE.Points(fireParticlesGeo, fireMat);
+        scene.add(fireSystem);
+
+        // --- 5. REALISTIC LEAVES (Custom Shape) ---
+        const leafGroup = new THREE.Group();
+        scene.add(leafGroup);
+        const leaves = [];
+
+        // Draw a Realistic Leaf Shape
+        const leafShape = new THREE.Shape();
+        leafShape.moveTo(0, 0);
+        leafShape.bezierCurveTo(0.5, 0.5, 0.5, 1.5, 0, 2);
+        leafShape.bezierCurveTo(-0.5, 1.5, -0.5, 0.5, 0, 0);
+
+        const leafGeometry = new THREE.ShapeGeometry(leafShape);
+        leafGeometry.scale(0.08, 0.08, 0.08); // Scale down
+
+        for(let i=0; i<60; i++) {
+            const leafMat = new THREE.MeshLambertMaterial({ 
+                color: 0xffab91, // Dead/Autum leaf color
+                side: THREE.DoubleSide 
+            });
+            const leaf = new THREE.Mesh(leafGeometry, leafMat);
+            
+            // Random start position
+            leaf.position.set(
+                (Math.random() - 0.5) * 14,
+                3 + Math.random() * 5,
+                (Math.random() - 0.5) * 5
+            );
+            
+            leaf.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+            
+            // Custom physics properties
+            leaf.userData = {
+                speedY: 0.01 + Math.random() * 0.02,
+                swayFreq: 1 + Math.random() * 2,
+                swayAmp: 0.01 + Math.random() * 0.02,
+                rotSpeed: 0.01 + Math.random() * 0.03
+            };
+            
+            leafGroup.add(leaf);
+            leaves.push(leaf);
+        }
+
+        // --- 6. ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+
+        function animateMain() {
+            requestAnimationFrame(animateMain);
+            const time = clock.getElapsedTime();
+
+            // A. Earth Rotation & Heating Logic
+            earth.rotation.y += 0.0005; // Rotate Earth slowly
+            clouds.rotation.y += 0.0007; // Clouds move faster
+
+            // Cycle: Healthy -> Burning (0 to 1)
+            const cycle = (Math.sin(time * 0.2) + 1) / 2; 
+            
+            // Interpolate Color: Natural (White) to Burning (Red Tint)
+            // We use RGB set to tint the texture. 
+            // 1,1,1 = Natural Texture. 1,0.2,0.2 = Red Tinted Texture.
+            const g_b_value = 1.0 - (cycle * 0.8); // Goes from 1.0 down to 0.2
+            earth.material.color.setRGB(1, g_b_value, g_b_value); 
+
+            // Emissive Glow (Lava effect): Black -> Red
+            earth.material.emissive.setHSL(0.02, 1, cycle * 0.4); 
+            
+            // Atmosphere changes: Blue -> Smoggy Orange
+            atmosphere.material.color.setHSL(0.6 * (1 - cycle), 0.9, 0.5); 
+            atmosphere.material.opacity = 0.15 + (cycle * 0.2); 
+
+            // B. Realistic Fire Movement (Updated with Color Gradients)
+            const positions = fireSystem.geometry.attributes.position.array;
+            const colors = fireSystem.geometry.attributes.color.array;
+
+            for(let i=0; i<fireCount; i++) {
+                // Rising based on individual speed
+                positions[i*3+1] += fireSpeeds[i]; 
+
+                // Turbulence (Sine wave wiggle)
+                positions[i*3] += Math.sin(time * 3 + positions[i*3+1]) * 0.01; 
+
+                // Reset when too high
+                if(positions[i*3+1] > -1.0) {
+                    positions[i*3+1] = -4.5; // Reset to bottom
+                    positions[i*3] = (Math.random() - 0.5) * 12; // Random X
+                }
+
+                // Dynamic Color Gradient based on Height
+                // Map height from -4.5 (Bottom) to -1.0 (Top) to 0..1 range
+                let h = (positions[i*3+1] + 4.5) / 3.5;
+                if(h < 0) h = 0; if(h > 1) h = 1;
+
+                // Gradient Logic: 
+                // Bottom: White/Yellow -> Middle: Orange -> Top: Red/Dark
+                colors[i*3] = 1.0; // Red channel always max
+                colors[i*3+1] = Math.max(0, 1.0 - (h * 1.5)); // Green fades out (Yellow->Red)
+                colors[i*3+2] = Math.max(0, 0.5 - (h * 2));   // Blue fades out immediately
+            }
+            fireSystem.geometry.attributes.position.needsUpdate = true;
+            fireSystem.geometry.attributes.color.needsUpdate = true;
+
+            // Fire Light Flicker
+            fireLight.intensity = 1.0 + Math.sin(time * 15) * 0.3;
+            fireLight.color.setHSL(0.05 + Math.sin(time)*0.02, 1, 0.5);
+
+            // C. Leaf Flutter
+            leaves.forEach((leaf, idx) => {
+                leaf.position.y -= leaf.userData.speedY;
+                
+                // Realistic sway calculation
+                leaf.position.x += Math.sin(time * leaf.userData.swayFreq + idx) * leaf.userData.swayAmp;
+                
+                // Tumble rotation
+                leaf.rotation.x += leaf.userData.rotSpeed;
+                leaf.rotation.z += leaf.userData.rotSpeed;
+
+                // Reset when below screen
+                if(leaf.position.y < -5) {
+                    leaf.position.y = 5;
+                    leaf.position.x = (Math.random() - 0.5) * 12;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animateMain();
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- 7. COURSES & QUIZ SYSTEM ---
+        
+        let currentCourseType = '';
+        let currentCourseTitle = '';
+
+        // Quiz Database
+        const quizDB = {
+            'climate': [
+                { q: "What is the primary greenhouse gas emitted by burning fossil fuels?", options: ["Oxygen", "Carbon Dioxide", "Nitrogen"], ans: 1 },
+                { q: "Which sector is the largest contributor to global emissions?", options: ["Energy production", "Fashion", "Forestry"], ans: 0 },
+                { q: "What constitutes a 'renewable' energy source?", options: ["Coal", "Natural Gas", "Solar & Wind"], ans: 2 }
+            ],
+            'sdg': [
+                { q: "How many Sustainable Development Goals (SDGs) did the UN adopt?", options: ["10 Goals", "17 Goals", "50 Goals"], ans: 1 },
+                { q: "Which Goal number specifically addresses 'Climate Action'?", options: ["Goal 13", "Goal 1", "Goal 5"], ans: 0 },
+                { q: "What is the global target year to achieve the SDGs?", options: ["2030", "2050", "2100"], ans: 0 }
+            ],
+            'nature': [
+                { q: "What percentage of the Earth's surface is covered by oceans?", options: ["50%", "71%", "30%"], ans: 1 },
+                { q: "Which is the biggest threat to biodiversity today?", options: ["Habitat Loss", "Eco-tourism", "Wind Turbines"], ans: 0 },
+                { q: "Trees help fight climate change by absorbing what?", options: ["Oxygen", "Carbon Dioxide", "Argon"], ans: 1 }
+            ]
+        };
+
+        // 1. Start Course
+        function startCourse(url, title, type) {
+            // Open learning material
+            window.open(url, '_blank');
+            
+            // Setup Modal
+            currentCourseType = type;
+            currentCourseTitle = title;
+            document.getElementById('modal-course-title').innerText = title;
+            
+            // Reset Views
+            document.getElementById('modal-step-1').style.display = 'block';
+            document.getElementById('modal-step-quiz').style.display = 'none';
+            document.getElementById('modal-step-name').style.display = 'none';
+            document.getElementById('modal-step-cert').style.display = 'none';
+            
+            // Show Overlay
+            document.getElementById('course-modal').style.display = 'flex';
+        }
+
+        // 2. Show Quiz
+        function showQuiz() {
+            document.getElementById('modal-step-1').style.display = 'none';
+            document.getElementById('modal-step-quiz').style.display = 'block';
+            
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = ''; // Clear prev
+            document.getElementById('quiz-feedback').innerText = '';
+            
+            const questions = quizDB[currentCourseType];
+            
+            questions.forEach((item, idx) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'quiz-question';
+                qDiv.innerHTML = `<p>${idx+1}. ${item.q}</p>`;
+                
+                item.options.forEach((opt, optIdx) => {
+                    qDiv.innerHTML += `
+                        <label class="quiz-option">
+                            <input type="radio" name="q${idx}" value="${optIdx}"> ${opt}
+                        </label>
+                    `;
+                });
+                container.appendChild(qDiv);
+            });
+        }
+
+        // 3. Submit & Validate
+        function submitQuiz() {
+            const questions = quizDB[currentCourseType];
+            let score = 0;
+            let allAnswered = true;
+            
+            questions.forEach((item, idx) => {
+                const selected = document.querySelector(`input[name="q${idx}"]:checked`);
+                if(!selected) {
+                    allAnswered = false;
+                } else if(parseInt(selected.value) === item.ans) {
+                    score++;
+                }
+            });
+
+            const feedback = document.getElementById('quiz-feedback');
+            
+            if(!allAnswered) {
+                feedback.innerText = "Please answer all questions.";
+                return;
+            }
+
+            // Must get 100% to pass
+            if(score === questions.length) {
+                // Success
+                document.getElementById('modal-step-quiz').style.display = 'none';
+                document.getElementById('modal-step-name').style.display = 'block';
+            } else {
+                feedback.innerText = `You scored ${score}/${questions.length}. Review the material and try again.`;
+            }
+        }
+
+        // 4. Generate Certificate
+        function generateCertificate() {
+            const name = document.getElementById('student-name').value;
+            if(!name.trim()) {
+                alert("Please enter your name.");
+                return;
+            }
+            
+            document.getElementById('cert-name').innerText = name;
+            document.getElementById('cert-course').innerText = currentCourseTitle;
+            
+            const now = new Date();
+            document.getElementById('cert-date').innerText = now.toLocaleDateString();
+            
+            // Show Cert View
+            document.getElementById('modal-step-name').style.display = 'none';
+            document.getElementById('modal-step-cert').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('course-modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('course-modal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

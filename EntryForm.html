@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join the Movement | Climate Action</title>
+    
+    <!-- NEW: High-Security Meta Tags -->
+    <!-- Content Security Policy: Whitelists specific domains -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com data:;">
+    <!-- Prevent Clickjacking -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <!-- XSS Protection -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <!-- Prevent MIME Sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- NEW: Crypto-JS for Military-Grade Encryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
+    <!-- Importing Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #00e676; 
+            --primary-shadow: #007029;
+            --glass-bg: rgba(0, 20, 10, 0.5); /* Transparent to see leaves */
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-glow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background: #000;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* 3D Background Container */
+        #threed-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1; /* Behind everything */
+            background: linear-gradient(to bottom, #1e3c72, #2a5298, #134e5e); /* Deep Blue/Green Sky Gradient */
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1500px;
+        }
+
+        /* The Glass Form Card */
+        .form-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(5px); 
+            -webkit-backdrop-filter: blur(5px);
+            padding: 45px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 30px 60px rgba(0,0,0,0.8),
+                0 -1px 0 rgba(255,255,255,0.2) inset,
+                0 0 20px rgba(0, 230, 118, 0.1);
+            
+            transform-style: preserve-3d;
+            animation: floatIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            opacity: 0;
+            transform: translateY(100px) rotateX(15deg);
+        }
+
+        @keyframes floatIn { to { opacity: 1; transform: translateY(0) rotateX(0); } }
+
+        /* Typography */
+        h2 {
+            text-align: center; margin-bottom: 35px;
+            font-family: 'Playfair Display', serif; font-weight: 700; font-size: 2.2rem;
+            color: #fff; text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.6); 
+            transform: translateZ(40px);
+        }
+
+        .input-group { margin-bottom: 22px; position: relative; transform: translateZ(20px); }
+        label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: #b9f6ca; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+
+        /* Inputs */
+        input, select, textarea {
+            width: 100%; padding: 14px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 12px; font-size: 1rem; font-family: inherit; box-sizing: border-box; transition: all 0.3s ease; box-shadow: inset 0 3px 6px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05);
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-green); background: rgba(0, 20, 10, 0.6); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 0 20px rgba(0, 230, 118, 0.4); transform: translateZ(5px); }
+
+        /* Buttons */
+        .btn-action {
+            width: 100%; padding: 15px; margin-top: 15px; cursor: pointer; font-size: 1rem; font-weight: 700; color: white; text-transform: uppercase; letter-spacing: 2px; border: none; border-radius: 12px; background: linear-gradient(145deg, #00e676, #00c853); box-shadow: 0 6px 0 #00600f, 0 15px 25px rgba(0,0,0,0.5); transition: all 0.15s; position: relative; transform: translateZ(35px);
+        }
+        .btn-action:hover { transform: translateY(-2px) translateZ(35px); background: linear-gradient(145deg, #69f0ae, #00e676); box-shadow: 0 8px 0 #00600f, 0 20px 30px rgba(0,0,0,0.5); }
+        .btn-action:active { transform: translateY(6px) translateZ(35px); box-shadow: 0 0 0 #00600f, 0 5px 10px rgba(0,0,0,0.5); }
+        
+        .btn-otp { background: linear-gradient(145deg, #ffa726, #fb8c00); box-shadow: 0 5px 0 #e65100, 0 8px 10px rgba(0,0,0,0.3); width: auto; flex-shrink: 0; padding: 14px 25px; margin: 0 0 0 10px; }
+        .btn-otp:hover { background: linear-gradient(145deg, #ffb74d, #f57c00); box-shadow: 0 7px 0 #e65100, 0 12px 15px rgba(0,0,0,0.3); }
+        .btn-otp:active { background: #ef6c00; box-shadow: 0 0 0 #e65100; transform: translateY(5px); }
+
+        #otp-section { display: none; margin-top: 20px; border-top: 1px dashed rgba(255,255,255,0.2); padding-top: 20px; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Notification */
+        .phone-simulation { position: fixed; top: 25px; right: 25px; width: 340px; background: rgba(10, 20, 10, 0.95); backdrop-filter: blur(15px); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid var(--primary-green); transform: translateX(450px); transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); z-index: 9999; padding: 20px; font-family: system-ui, -apple-system, sans-serif; color: #fff; }
+        .phone-simulation.active { transform: translateX(0); }
+        .sim-header { display: flex; justify-content: space-between; color: #888; font-size: 0.75rem; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .sim-body { font-size: 0.95rem; line-height: 1.5; color: #ececec; }
+        .sim-code { font-weight: 700; color: var(--primary-green); font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+    <!-- 3D BACKGROUND CONTAINER -->
+    <div id="threed-bg"></div>
+
+    <!-- FAKE SMS NOTIFICATION -->
+    <div id="fake-sms" class="phone-simulation">
+        <div class="sim-header"><span>Climate Action • Messages</span><span>Now</span></div>
+        <div class="sim-body">Action Verification:<br>Your code is <span id="sim-code-display" class="sim-code"></span>.</div>
+    </div>
+
+    <div class="container">
+        <div class="form-box">
+            
+            <!-- ======= USER SECTION ======= -->
+            <div id="user-section">
+                <h2>Connect with Nature</h2>
+                <form id="natureForm" onsubmit="return false;">
+                    <div class="input-group">
+                        <label>Your Name</label>
+                        <input type="text" id="name" required placeholder="Enter your full name">
+                    </div>
+
+                    <div class="input-group">
+                        <label>A Thought on Nature</label>
+                        <textarea id="thought" rows="2" required placeholder="Nature is..."></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Preferred Language</label>
+                        <select id="language" required>
+                            <option value="">Select Language</option>
+                            <optgroup label="Indian Languages">
+                                <option value="hi">Hindi (हिंदी)</option>
+                                <option value="bn">Bengali (বাংলা)</option>
+                                <option value="te">Telugu (తెలుగు)</option>
+                                <option value="mr">Marathi (मराठी)</option>
+                                <option value="ta">Tamil (தமிழ்)</option>
+                                <option value="gu">Gujarati (ગુજરાતી)</option>
+                                <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                                <option value="ml">Malayalam (മലയാളം)</option>
+                                <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                                <option value="or">Odia (ଓଡ଼ିଆ)</option>
+                                <option value="as">Assamese (অসমীয়া)</option>
+                                <option value="sa">Sanskrit (संस्कृतम्)</option>
+                            </optgroup>
+                            <optgroup label="World Languages">
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="zh">Chinese</option>
+                                <option value="ar">Arabic</option>
+                                <option value="ru">Russian</option>
+                                <option value="ja">Japanese</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Phone Number</label>
+                        <div style="display: flex; align-items: flex-end;">
+                            <input type="tel" id="phone" required placeholder="+91 XXXXX XXXXX">
+                            <button class="btn-action btn-otp" onclick="sendOTP()">Get Code</button>
+                        </div>
+                    </div>
+
+                    <div id="otp-section">
+                        <p style="font-size: 0.85rem; color: #69f0ae; margin-bottom: 8px; font-weight: 600;">Code sent to your phone!</p>
+                        <div class="input-group">
+                            <label>Enter 6-Digit Code</label>
+                            <input type="number" id="otp-input" placeholder="XXXXXX">
+                        </div>
+                    </div>
+
+                    <!-- Button Moved Outside -->
+                    <button class="btn-action" onclick="verifyAndSubmit()">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- THREE.JS FALLING LEAVES SCRIPT -->
+    <script>
+        // Ensure DOM is ready
+        window.addEventListener('load', function() {
+            const bgContainer = document.getElementById('threed-bg');
+            if(!bgContainer) return;
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            bgContainer.appendChild(renderer.domElement);
+
+            camera.position.z = 50;
+
+            // 1. Create Leaf Texture Generator (Different colors for different trees)
+            function createLeafTexture(colorObj) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+
+                // Leaf base shape
+                ctx.fillStyle = colorObj.fill; 
+                ctx.beginPath();
+                ctx.ellipse(256, 128, 250, 120, 0, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Leaf Vein
+                ctx.strokeStyle = colorObj.vein;
+                ctx.lineWidth = 10;
+                ctx.beginPath();
+                ctx.moveTo(10, 128);
+                ctx.lineTo(502, 128);
+                ctx.stroke();
+
+                // Text
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '900 38px Arial'; 
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                // Outline for text (readability on yellow/orange leaves)
+                ctx.strokeStyle = 'rgba(0,0,0,0.6)';
+                ctx.lineWidth = 4;
+                ctx.strokeText("We need to take", 256, 85);
+                ctx.strokeText("the Climate Action", 256, 170);
+
+                ctx.fillText("We need to take", 256, 85);
+                ctx.fillText("the Climate Action", 256, 170);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                return texture;
+            }
+
+            // Define Variety of Tree Leaves
+            const treeTypes = [
+                { fill: '#4CAF50', vein: '#2E7D32' }, // Green (Summer)
+                { fill: '#FF9800', vein: '#E65100' }, // Orange (Autumn)
+                { fill: '#FFEB3B', vein: '#FBC02D' }, // Yellow (Birch)
+                { fill: '#D32F2F', vein: '#B71C1C' }  // Red (Maple)
+            ];
+
+            // Create materials for each tree type
+            const materials = treeTypes.map(type => {
+                const texture = createLeafTexture(type);
+                return new THREE.MeshBasicMaterial({ 
+                    map: texture, 
+                    transparent: true, 
+                    side: THREE.DoubleSide 
+                });
+            });
+
+            // 2. Spawn Leaves (Increased Size & Count)
+            const leaves = [];
+            const leafCount = 50;
+
+            for(let i=0; i<leafCount; i++) {
+                // Larger Geometry: 12x6
+                const geometry = new THREE.PlaneGeometry(12, 6);
+                
+                // Pick random tree material
+                const randomMat = materials[Math.floor(Math.random() * materials.length)];
+                const leaf = new THREE.Mesh(geometry, randomMat);
+
+                // Random Position across screen
+                leaf.position.x = (Math.random() - 0.5) * 120;
+                leaf.position.y = (Math.random() - 0.5) * 100; 
+                leaf.position.z = (Math.random() - 0.5) * 40; 
+
+                // Random Rotation
+                leaf.rotation.x = Math.random() * Math.PI;
+                leaf.rotation.y = Math.random() * Math.PI;
+                leaf.rotation.z = Math.random() * Math.PI;
+                
+                leaf.userData = {
+                    speedY: 0.1 + Math.random() * 0.15, // Falling speed
+                    rotSpeedX: (Math.random() - 0.5) * 0.04,
+                    rotSpeedY: (Math.random() - 0.5) * 0.04,
+                    oscillationSpeed: Math.random() * 0.05,
+                    oscillationOffset: Math.random() * Math.PI
+                };
+
+                scene.add(leaf);
+                leaves.push(leaf);
+            }
+
+            // 3. Animation Loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                leaves.forEach(leaf => {
+                    // fall down
+                    leaf.position.y -= leaf.userData.speedY;
+                    
+                    // rotate
+                    leaf.rotation.x += leaf.userData.rotSpeedX;
+                    leaf.rotation.y += leaf.userData.rotSpeedY;
+
+                    // sway
+                    leaf.position.x += Math.sin(Date.now() * 0.001 * leaf.userData.oscillationSpeed + leaf.userData.oscillationOffset) * 0.05;
+
+                    // loop top-bottom
+                    if(leaf.position.y < -50) {
+                        leaf.position.y = 50;
+                        leaf.position.x = (Math.random() - 0.5) * 120;
+                    }
+                });
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle Resize
+            window.addEventListener('resize', () => {
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+            });
+        });
+    </script>
+
+    <script>
+        let generatedOTP = null;
+
+        function sendOTP() {
+            const phone = document.getElementById('phone').value;
+            if(phone.length < 10) { alert("Please enter a valid phone number first."); return; }
+            generatedOTP = Math.floor(100000 + Math.random() * 900000);
+            setTimeout(() => {
+                const notifBox = document.getElementById('fake-sms');
+                const codeSpan = document.getElementById('sim-code-display');
+                codeSpan.innerText = generatedOTP;
+                notifBox.classList.add('active');
+                setTimeout(() => { notifBox.classList.remove('active'); }, 8000);
+                document.getElementById('otp-section').style.display = 'block';
+            }, 1000);
+        }
+
+        function verifyAndSubmit() {
+            const userOTP = document.getElementById('otp-input').value;
+            const name = document.getElementById('name').value;
+            const thought = document.getElementById('thought').value;
+            const lang = document.getElementById('language').value;
+            const phone = document.getElementById('phone').value;
+
+            if (!generatedOTP) { alert("Please click 'Get Code' to verify your phone number first."); return; }
+            if (userOTP != generatedOTP) { alert("Invalid Code. Please try again."); return; }
+            if (!name || !thought || !lang) { alert("Please fill all details."); return; }
+
+            // 1. SAVE DATA
+            let userDatabase = JSON.parse(localStorage.getItem('climateUserDB') || "[]");
+            let newUser = { Date: new Date().toLocaleString(), Name: name, Phone: phone, Language: lang, Thought: thought };
+            userDatabase.push(newUser);
+            localStorage.setItem('climateUserDB', JSON.stringify(userDatabase));
+
+            // 2. SET SESSION
+            localStorage.setItem('userLanguage', lang);
+            localStorage.setItem('isVerified', 'true');
+
+            if (lang && lang !== 'en') { document.cookie = `googtrans=/en/${lang}; path=/`; }
+            else { document.cookie = "googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"; }
+
+            console.log("Verified. Redirecting...");
+            window.location.href = "WelcomeGuide.html";
+        }
+    </script>
+</body>
+</html>
