@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poem | Climate Action</title>
+    <!-- NEW: Secure Connection & Privacy Headers -->
+    <!-- 1. CSP: Restrict resources to trusted CDNs (Google Fonts, Three.js) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com data: blob:;">
+    <!-- 2. Anti-Clickjacking: Prevent this page from being embedded in iframes -->
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <!-- 3. Security: Prevent MIME type sniffing -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <!-- 4. Privacy: Control referrer data sending -->
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <!-- 5. Permissions Policy: Disable unused sensitive features -->
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), payment=(), usb=()">
+
+    <!-- Importing Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            color: #e0e0e0;
+            /* Fixed: background-image with video is invalid css. Using video tag instead. */
+            background-color: #000; 
+            font-family: 'Montserrat', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* NEW: Full Screen Video Background */
+        #bg-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+            filter: brightness(0.6); /* Slightly darken video for readability */
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            border-color: rgba(105, 240, 174, 0.3);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            background: linear-gradient(to right, #69f0ae, #00b0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(105, 240, 174, 0.2);
+            letter-spacing: 1px;
+        }
+
+        /* Audio Button Style */
+        .audio-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 15px;
+        }
+
+        .btn-listen {
+            background: rgba(105, 240, 174, 0.1);
+            border: 1px solid #69f0ae;
+            color: #69f0ae;
+            padding: 12px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .btn-listen:hover {
+            background: #69f0ae;
+            color: #0f2027;
+            box-shadow: 0 0 25px rgba(105, 240, 174, 0.6);
+            transform: scale(1.05);
+        }
+
+        .btn-listen.stop {
+            border-color: #ff5252;
+            color: #ff5252;
+            background: rgba(255, 82, 82, 0.1);
+        }
+        .btn-listen.stop:hover {
+            background: #ff5252;
+            color: white;
+            box-shadow: 0 0 25px rgba(255, 82, 82, 0.6);
+        }
+
+        .poem-content {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.35rem;
+            line-height: 1.9;
+            text-align: center;
+            color: #f0f0f0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .stanza {
+            margin-bottom: 40px;
+        }
+
+        .highlight {
+            color: #69f0ae;
+            font-style: italic;
+            text-shadow: 0 0 10px rgba(105, 240, 174, 0.4);
+        }
+
+        .btn-home {
+            display: block;
+            width: fit-content;
+            margin: 50px auto 0;
+            padding: 12px 35px;
+            border: 2px solid #69f0ae;
+            color: #69f0ae;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-home:hover {
+            background: #69f0ae;
+            color: #000;
+            box-shadow: 0 0 20px rgba(105, 240, 174, 0.5);
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .poem-content { font-size: 1.1rem; }
+            .container { padding: 30px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- REPLACED: 3D Canvas with Video Background -->
+    <video autoplay muted loop id="bg-video">
+        <!-- Using the video file referenced in your previous CSS -->
+        <source src="Nature_Video_Generation-2.mp4" type="video/mp4">
+        <!-- Fallback if local file missing -->
+        <source src="https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4" type="video/mp4">
+        Your browser does not support HTML5 video.
+    </video>
+
+    <div class="container">
+        <h1>Climate Action for Every Good Action</h1>
+
+        <!-- Audio Controls -->
+        <div class="audio-container">
+            <button class="btn-listen" id="play-btn" onclick="toggleSpeech()">
+                <span>🔊</span> Listen to Poem
+            </button>
+        </div>
+
+        <div class="poem-content" id="poem-text">
+            <!-- Poem content loaded via JS -->
+        </div>
+
+        <a href="climate.html" class="btn-home">Return to Home</a>
+    </div>
+
+    <!-- SECURITY LOGIC (Preserved) -->
+    <script>
+        // --- 0. HIGH SECURITY MODULE (Anti-Tamper) ---
+        (function() {
+            // Disable Right Click
+            document.addEventListener('contextmenu', event => event.preventDefault()); 
+
+            // Disable DevTools shortcuts
+            document.onkeydown = function(e) {
+                if(e.keyCode == 123) { return false; } // F12
+                if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)){ return false; }
+                if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)){ return false; }
+                if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)){ return false; }
+                if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)){ return false; }
+            };
+
+            const styles = [
+                'color: #ff5252', 
+                'font-size: 30px',
+                'font-weight: bold', 
+                'text-shadow: 2px 2px #000'
+            ].join(';');
+            console.log('%c STOP! Secure Area.', styles);
+        })();
+        
+
+    </script>
+
+
+    <!-- Speech & Multilingual Logic -->
+    <script>
+        let synth = window.speechSynthesis;
+        let isSpeaking = false;
+        const playBtn = document.getElementById('play-btn');
+
+        // 1. POEM DATABASE (Multilingual Support)
+        const poemsDB = {
+            'en': {
+                title: "Climate Action for Every Good Action",
+                content: `
+                    <div class="stanza">
+                        Climate, Climate, Climate,<br>
+                        Everywhere we see Climate,<br>
+                        But we do not see <span class="highlight">Climate change</span>,<br>
+                        And do not see the Climate Action,<br>
+                        Which Human ignore without taking any Change,<br>
+                        Not taking Climate Action.
+                    </div>
+                    <div class="stanza">
+                        But as the Human,<br>
+                        It is our responsibility to take that Action,<br>
+                        Else Climate will take the Action,<br>
+                        Which Human is beware of that Action,<br>
+                        The Action of Intense Heat,<br>
+                        The Action of Flood, Cyclone, Typhoon,<br>
+                        The Action That will afraid the human,<br>
+                        And make them Harm,<br>
+                        If Human do not take Climate Action Immediately,<br>
+                        It will create a Reaction of Heat and Disaster Immediately.
+                    </div>
+                    <div class="stanza">
+                        But if Human Take Action,<br>
+                        Controlling Global Warming and Greenhouse Gas,<br>
+                        That will make the human Relief,<br>
+                        The Love that he will get from Nature,<br>
+                        Is Precious and Joyful,<br>
+                        Then Human will sing,<br>
+                        Dancing for Rain,<br>
+                        And Nature will give him the Gain.
+                    </div>
+                    <div class="stanza">
+                        Climate is the Part of Nature,<br>
+                        So Lets take <span class="highlight">Climate Action</span>,<br>
+                        A Step Towards Saving Climate,<br>
+                        Which will make Nature Happy,<br>
+                        And Human a True Creature,<br>
+                        That Will give us the True,<br>
+                        Definition of Climate Action.
+                    </div>`
+            },
+            'hi': {
+                title: "हर अच्छे कर्म के लिए जलवायु कार्रवाई",
+                content: `
+                    <div class="stanza">
+                        जलवायु, जलवायु, जलवायु,<br>
+                        हर जगह हम जलवायु देखते हैं,<br>
+                        लेकिन हम <span class="highlight">जलवायु परिवर्तन</span> नहीं देखते,<br>
+                        और जलवायु कार्रवाई को नजरअंदाज करते हैं।
+                    </div>
+                    <div class="stanza">
+                        लेकिन एक इंसान के रूप में,<br>
+                        यह हमारी जिम्मेदारी है कि हम कार्रवाई करें,<br>
+                        वरना जलवायु कार्रवाई करेगी,<br>
+                        भीषण गर्मी, बाढ़ और तूफान का कहर,<br>
+                        अगर हम अभी नहीं संभले,<br>
+                        तो विनाशकारी प्रतिक्रिया तुरंत होगी।
+                    </div>
+                    <div class="stanza">
+                        लेकिन अगर हम कार्रवाई करें,<br>
+                        ग्लोबल वार्मिंग को नियंत्रित करें,<br>
+                        तो प्रकृति हमें प्रेम और खुशी देगी,<br>
+                        तब हम बारिश में झूमेंगे और गाएंगे,<br>
+                        प्रकृति के प्रेम का लाभ उठाएंगे।
+                    </div>
+                    <div class="stanza">
+                        जलवायु प्रकृति का हिस्सा है,<br>
+                        तो चलिए <span class="highlight">जलवायु कार्रवाई</span> करते हैं,<br>
+                        जो प्रकृति को खुश करेगी,<br>
+                        और इंसान को सच्चा प्राणी बनाएगी,<br>
+                        यही है जलवायु कार्रवाई की सच्ची परिभाषा।
+                    </div>`
+            },
+            'es': {
+                title: "Acción Climática por Cada Buena Acción",
+                content: `
+                    <div class="stanza">
+                        Clima, Clima, Clima,<br>
+                        Por todas partes vemos el Clima,<br>
+                        Pero no vemos el <span class="highlight">Cambio Climático</span>,<br>
+                        Y los humanos ignoran la Acción necesaria.
+                    </div>
+                    <div class="stanza">
+                        Como humanos es nuestra responsabilidad,<br>
+                        Tomar esa acción ahora,<br>
+                        De lo contrario, el clima responderá,<br>
+                        Con calor intenso, inundaciones y tifones,<br>
+                        Si no actuamos inmediatamente,<br>
+                        El desastre llegará inminentemente.
+                    </div>
+                    <div class="stanza">
+                        Pero si tomamos Acción,<br>
+                        Controlando los gases que calientan,<br>
+                        La naturaleza nos dará alivio y calma,<br>
+                        Amor precioso y alegría,<br>
+                        Y el humano cantará bajo la lluvia.
+                    </div>
+                    <div class="stanza">
+                        Así que tomemos <span class="highlight">Acción Climática</span>,<br>
+                        Para hacer feliz a la naturaleza,<br>
+                        Y ser verdaderas criaturas de amor,<br>
+                        Esa es la verdadera definición de nuestra misión.
+                    </div>`
+            },
+            'fr': {
+                title: "Action Climatique pour Chaque Bonne Action",
+                content: `
+                    <div class="stanza">
+                        Climat, Climat, Climat,<br>
+                        Partout nous voyons le Climat,<br>
+                        Mais nous ignorons le <span class="highlight">Changement Climatique</span>,<br>
+                        Sans prendre aucune mesure.
+                    </div>
+                    <div class="stanza">
+                        Mais c'est notre responsabilité,<br>
+                        Sinon le climat réagira,<br>
+                        Par la chaleur, les inondations et les typhons,<br>
+                        Si nous n'agissons pas immédiatement,<br>
+                        Le désastre sera imminent.
+                    </div>
+                    <div class="stanza">
+                        Prenons donc l'<span class="highlight">Action Climatique</span>,<br>
+                        Pour sauver notre belle nature,<br>
+                        Et devenir de véritables créatures d'amour,<br>
+                        C'est la vraie définition de l'espoir.
+                    </div>`
+            }
+        };
+
+        // 2. SETUP LANGUAGE ON LOAD
+        const userLang = localStorage.getItem('userLanguage') || 'en';
+
+        function loadPoem() {
+            // Retrieve poem based on language, fallback to English if missing
+            const data = poemsDB[userLang] || poemsDB['en'];
+            
+            document.querySelector('h1').innerText = data.title;
+            document.getElementById('poem-text').innerHTML = data.content;
+            
+            // Adjust button text for immersion (Simple check)
+            if(userLang === 'hi') document.querySelector('.btn-home').innerText = "मुख्य पृष्ठ पर लौटें";
+            if(userLang === 'es') document.querySelector('.btn-home').innerText = "Volver al Inicio";
+        }
+        
+        loadPoem();
+
+        // 3. VOICE LOGIC (FIXED)
+        // Global array to prevent Browser Garbage Collection from stopping audio
+        let activeUtterances = [];
+
+        function toggleSpeech() {
+            if (synth.speaking) {
+                synth.cancel(); 
+                isSpeaking = false;
+                resetButton();
+            } else {
+                startSpeaking();
+            }
+        }
+
+        function startSpeaking() {
+            // 1. CLEAR PREVIOUS
+            synth.cancel();
+            activeUtterances = []; // Reset memory keep-alive
+
+            const rawText = document.getElementById('poem-text').innerText;
+            const lines = rawText.split(/\r?\n/).filter(line => line.trim().length > 0);
+
+            // 2. ENSURE VOICES ARE LOADED
+            let voices = synth.getVoices();
+            if (voices.length === 0) {
+                // If voices aren't ready, wait for them and try again once
+                window.speechSynthesis.onvoiceschanged = function() {
+                    window.speechSynthesis.onvoiceschanged = null; // Run only once
+                    startSpeaking();
+                };
+                return;
+            }
+            
+            // 3. SELECT BEST VOICE
+            let bestVoice = voices.find(v => v.lang.startsWith(userLang) && (v.name.includes("Google") || v.name.includes("Microsoft")));
+            if (!bestVoice) bestVoice = voices.find(v => v.lang.startsWith(userLang));
+            if (!bestVoice && userLang !== 'en') bestVoice = voices.find(v => v.lang.startsWith('en'));
+            if (!bestVoice) bestVoice = voices[0]; // Absolute fallback
+
+            // 4. UPDATE BUTTON UI
+            playBtn.innerHTML = "<span>⏹</span> Stop Reading";
+            playBtn.classList.add('stop');
+            isSpeaking = true;
+
+            // 5. QUEUE AUDIO LINES
+            lines.forEach((line, index) => {
+                const utterance = new SpeechSynthesisUtterance(line.trim());
+                
+                if (bestVoice) {
+                    utterance.voice = bestVoice;
+                    utterance.lang = userLang;
+                }
+
+                utterance.rate = 0.9; 
+                utterance.pitch = 1.0; 
+                utterance.volume = 1;
+
+                // Handle Finish / Error
+                if (index === lines.length - 1) {
+                    utterance.onend = function() {
+                        resetButton();
+                        isSpeaking = false;
+                        activeUtterances = []; // Cleanup memory
+                    };
+                    utterance.onerror = function(e) {
+                         console.error("Speech Error:", e);
+                         resetButton();
+                         isSpeaking = false;
+                    };
+                }
+                
+                // Keep reference to active utterance for potential future control
+                activeUtterances.push(utterance);
+                synth.speak(utterance);
+            });
+        }
+
+        function resetButton() {
+            playBtn.classList.remove('stop');
+            // Restore button text based on lang
+            if(userLang === 'hi') playBtn.innerHTML = "<span>🔊</span> कविता सुनें";
+            else if(userLang === 'es') playBtn.innerHTML = "<span>🔊</span> Escuchar Poema";
+            else playBtn.innerHTML = "<span>🔊</span> Listen to Poem";
+        }
+
+        // Ensure voices are loaded
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        }
+    </script>
+</body>
+</html>
